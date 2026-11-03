@@ -1,0 +1,3060 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebGL2D API 文件</title>
+  <style>
+    :root {
+      --bg: #fbfbfa;
+      --fg: #1c2129;
+      --muted: #5f6b7a;
+      --soft: #f1f3f5;
+      --line: #e2e5e9;
+      --card: #ffffff;
+      --accent: #2457d6;
+      --accent-soft: #e8eefc;
+      --code: #f5f6f8;
+      --ok: #1c7c45;
+      --ok-bg: #e5f4eb;
+      --part: #9a5b00;
+      --part-bg: #fbf0dc;
+      --no: #b42318;
+      --no-bg: #fdeceb;
+      --tk-com: #8a94a3;
+      --tk-str: #0f7b52;
+      --tk-num: #b45309;
+      --tk-kw: #7c3aed;
+      --tk-fn: #2457d6;
+      --sel: rgba(36, 87, 214, .22);
+      --checker: #0000000d;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #121418;
+        --fg: #e6e8ec;
+        --muted: #9aa4b2;
+        --soft: #1a1d23;
+        --line: #2a2e36;
+        --card: #171a1f;
+        --accent: #7ea2ff;
+        --accent-soft: #1d2740;
+        --code: #1b1e25;
+        --ok: #5fd394;
+        --ok-bg: #163223;
+        --part: #f0b860;
+        --part-bg: #3a2a10;
+        --no: #ff8a80;
+        --no-bg: #3b1a18;
+        --tk-com: #6b7686;
+        --tk-str: #7dd3a8;
+        --tk-num: #f5b56b;
+        --tk-kw: #c4a5ff;
+        --tk-fn: #8fb0ff;
+        --sel: rgba(126, 162, 255, .3);
+        --checker: #ffffff10;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #121418;
+      --fg: #e6e8ec;
+      --muted: #9aa4b2;
+      --soft: #1a1d23;
+      --line: #2a2e36;
+      --card: #171a1f;
+      --accent: #7ea2ff;
+      --accent-soft: #1d2740;
+      --code: #1b1e25;
+      --ok: #5fd394;
+      --ok-bg: #163223;
+      --part: #f0b860;
+      --part-bg: #3a2a10;
+      --no: #ff8a80;
+      --no-bg: #3b1a18;
+      --tk-com: #6b7686;
+      --tk-str: #7dd3a8;
+      --tk-num: #f5b56b;
+      --tk-kw: #c4a5ff;
+      --tk-fn: #8fb0ff;
+      --sel: rgba(126, 162, 255, .3);
+      --checker: #ffffff10;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-padding-top: 16px;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 15px/1.7 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    code,
+    pre,
+    textarea {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    code {
+      font-size: 13px;
+      background: var(--code);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    pre.static {
+      font-size: 13px;
+      background: var(--code);
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      line-height: 1.55;
+    }
+
+    pre.static code {
+      background: none;
+      padding: 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 14px 40px;
+      border-right: 1px solid var(--line);
+    }
+
+    nav .brand {
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    nav .ver {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    nav input[type=search] {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--card);
+      color: var(--fg);
+      font: inherit;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    nav label.toggle {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 4px 0 8px;
+      cursor: pointer;
+    }
+
+    nav h4 {
+      margin: 14px 0 4px;
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--muted);
+    }
+
+    nav a {
+      display: block;
+      padding: 2px 8px;
+      border-radius: 5px;
+      color: var(--fg);
+      font-size: 13.5px;
+    }
+
+    nav a:hover {
+      background: var(--soft);
+      text-decoration: none;
+    }
+
+    .theme-btn {
+      margin-top: 16px;
+      font: inherit;
+      font-size: 12.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--fg);
+      cursor: pointer;
+    }
+
+    main {
+      padding: 32px 40px 80px;
+      min-width: 0;
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.25;
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0 0 20px;
+      max-width: 72ch;
+    }
+
+    h2 {
+      font-size: 21px;
+      margin: 48px 0 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    p,
+    li {
+      max-width: 78ch;
+    }
+
+    .note {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 14px 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .tablewrap {
+      overflow-x: auto;
+    }
+
+    .badge {
+      font-family: system-ui, sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .ok {
+      color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .part {
+      color: var(--part);
+      background: var(--part-bg);
+    }
+
+    .no {
+      color: var(--no);
+      background: var(--no-bg);
+    }
+
+    /* API 卡片 */
+    .api {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px 18px;
+      margin: 14px 0;
+    }
+
+    .api .sig {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 14.5px;
+      font-weight: 600;
+      word-break: break-word;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+
+    .api .sig .ret {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .api>p {
+      margin: 6px 0;
+    }
+
+    .api table {
+      margin: 8px 0;
+    }
+
+    .play {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px 6px 12px;
+      background: var(--soft);
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .bar .sp {
+      flex: 1;
+    }
+
+    .bar button {
+      font: inherit;
+      font-size: 12.5px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--fg);
+      cursor: pointer;
+    }
+
+    .bar button.run {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    :root[data-theme="dark"] .bar button.run {
+      color: #0d1220;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .bar button.run {
+        color: #0d1220;
+      }
+    }
+
+    .bar kbd {
+      font-family: inherit;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 4px;
+    }
+
+    .editor {
+      position: relative;
+      background: var(--code);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .editor pre,
+    .editor textarea {
+      margin: 0;
+      padding: 12px 14px;
+      border: 0;
+      font: inherit;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      tab-size: 2;
+      letter-spacing: 0;
+    }
+
+    .editor pre {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      color: var(--fg);
+    }
+
+    .editor textarea {
+      position: relative;
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      resize: none;
+      outline: none;
+      background: transparent;
+      color: transparent;
+      caret-color: var(--fg);
+      overflow: hidden;
+    }
+
+    .editor textarea::selection {
+      background: var(--sel);
+      color: transparent;
+    }
+
+    .editor:focus-within {
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
+
+    .t-com {
+      color: var(--tk-com);
+      font-style: italic;
+    }
+
+    .t-str {
+      color: var(--tk-str);
+    }
+
+    .t-num {
+      color: var(--tk-num);
+    }
+
+    .t-kw {
+      color: var(--tk-kw);
+    }
+
+    .t-fn {
+      color: var(--tk-fn);
+    }
+
+    .result {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .result figure {
+      margin: 0;
+      flex: 0 1 320px;
+      min-width: 0;
+    }
+
+    .result figcaption {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .result canvas {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      aspect-ratio: 320 / 200;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: repeating-conic-gradient(var(--checker) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+    }
+
+    .result .native.off {
+      display: none;
+    }
+
+    .out {
+      margin: 0;
+      padding: 8px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 12.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--fg);
+      background: var(--card);
+    }
+
+    .out:empty {
+      display: none;
+    }
+
+    .out .err {
+      color: var(--no);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 860px) {
+      .layout {
+        display: block;
+      }
+
+      nav {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        padding: 16px;
+      }
+
+      nav .links {
+        display: none;
+      }
+
+      main {
+        padding: 20px 16px 60px;
+      }
+
+      .api {
+        padding: 14px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <nav>
+      <div class="brand">webgl2d.js</div>
+      <div class="ver">v1.0.0 · claude x William77</div>
+      <input id="q" type="search" placeholder="搜尋 API…（如 arc、fillStyle）" aria-label="搜尋 API">
+      <label class="toggle"><input type="checkbox" id="cmp" checked> 顯示原生 Canvas 2D 對照</label>
+      <div class="links">
+        <h4>入門</h4>
+        <a href="#overview">概覽</a>
+        <a href="#playground">範例怎麼用</a>
+        <a href="#how">實作原理</a>
+        <a href="#support">支援度總表</a>
+        <a href="#sharp">讓畫面更清晰</a>
+        <h4>API</h4>
+        <a href="#entry">建立 Context</a>
+        <a href="#state">狀態</a>
+        <a href="#transform">變換</a>
+        <a href="#styles">填色與描邊樣式</a>
+        <a href="#lines">線條樣式</a>
+        <a href="#compositing">合成</a>
+        <a href="#rects">矩形</a>
+        <a href="#paths">路徑</a>
+        <a href="#drawing">填滿 / 描邊 / 裁切</a>
+        <a href="#text">文字</a>
+        <a href="#images">影像</a>
+        <a href="#pixels">像素操作</a>
+        <a href="#filters">濾鏡與陰影</a>
+        <a href="#misc">其他</a>
+        <a href="#path2d">Path2D</a>
+        <h4>參考</h4>
+        <a href="#limits">限制與差異</a>
+        <a href="#perf">效能建議</a>
+      </div>
+      <button class="theme-btn" id="theme" type="button">切換深 / 淺色</button>
+    </nav>
+
+    <main id="main">
+      <h1>WebGL2D API 文件</h1>
+      <p class="lead">以 WebGL 實作、與 <code>CanvasRenderingContext2D</code> 介面相同的 2D 繪圖函式庫。每個 API 都附有可直接編輯、執行的範例，並和原生
+        Canvas 2D 並排對照。</p>
+
+      <section data-sec>
+        <h2 id="overview">概覽</h2>
+        <ul>
+          <li><b>介面一致</b>：方法名稱、參數、多載、屬性預設值與驗證規則都依照 HTML Canvas 2D 規格。</li>
+          <li><b>WebGL 2 優先</b>：預設建立 WebGL 2 context，不支援時退回 WebGL 1。</li>
+          <li><b>零相依</b>：單一 <code>webgl2d.js</code>（UMD），可用 <code>&lt;script&gt;</code>、CommonJS 或 bundler 載入。</li>
+        </ul>
+        <pre class="static"><code>&lt;script src="webgl2d.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const ctx = WebGL2D.getContext(canvas);   // 取代 canvas.getContext('2d')
+  ctx.fillStyle = 'tomato';
+  ctx.fillRect(10, 10, 100, 50);
+&lt;/script&gt;</code></pre>
+        <div class="note">一個 <code>&lt;canvas&gt;</code> 只能有一種 context。已經呼叫過 <code>getContext('2d')</code> 的 canvas
+          無法再建立 WebGL2D，反之亦然。</div>
+      </section>
+
+      <section data-sec>
+        <h2 id="playground">範例怎麼用</h2>
+        <ul>
+          <li>標示「WebGL2D 專屬」的範例（例如自訂 shader 濾鏡）沒有原生版本可以對照。</li>
+          <li>每個範例的程式碼都可以直接編輯。停止輸入約半秒後會自動重新執行，也可以按 <b>執行</b> 或 <kbd>⌘/Ctrl</kbd> + <kbd>Enter</kbd>。<b>還原</b> 會回到原始範例。
+          </li>
+          <li>左邊的畫布是 <b>WebGL2D</b> 的結果，右邊是同一段程式在 <b>原生 Canvas 2D</b> 上的結果（可在側欄關閉）。畫布大小為 320 × 200。</li>
+          <li>範例中可以使用的變數：
+            <code>ctx</code>（context）、<code>canvas</code>、<code>Path2D</code>（WebGL2D 端為
+            <code>WebGL2D.Path2D</code>）、<code>WebGL2D</code>、
+            <code>log(...)</code>（輸出到範例下方）、<code>sampleImage</code>（160×100 的示範圖片）、<code>tile</code>（20×20 的圖樣磚）。
+          </li>
+          <li>每次執行前，context 都會先 <code>reset()</code>，所以範例之間不會互相影響。範例程式可以使用 <code>await</code>（例如等待影片開始播放）。</li>
+          <li>範例依你的螢幕以 <code>devicePixelRatio</code> 倍解析度渲染（見<a href="#sharp">讓畫面更清晰</a>）。原生對照端也套用了同樣的縮放，所以
+            <code>setTransform</code> 等方法在兩邊的行為一致。</li>
+        </ul>
+      </section>
+
+      <section data-sec>
+        <h2 id="how">實作原理</h2>
+        <div class="tablewrap">
+          <table>
+            <tr>
+              <th>功能</th>
+              <th>做法</th>
+            </tr>
+            <tr>
+              <td>路徑</td>
+              <td>點在加入路徑時，就用當下的變換矩陣轉成裝置座標。Bézier 曲線依 Wang's formula 攤平，弧與橢圓依半徑與縮放量決定分段數，誤差約 0.2 px。</td>
+            </tr>
+            <tr>
+              <td>填滿</td>
+              <td><b>Stencil-then-Cover</b>：先把三角扇寫進 stencil 計算環繞數（nonzero 用
+                <code>INCR_WRAP</code>/<code>DECR_WRAP</code>，evenodd 用 <code>INVERT</code>），再畫外接矩形上色並清除 stencil。</td>
+            </tr>
+            <tr>
+              <td>描邊</td>
+              <td>先轉回使用者座標，在 CPU 上產生線段、接合、端點與虛線的三角形，再透過 stencil 去除重疊，半透明線條交疊處不會變深。</td>
+            </tr>
+            <tr>
+              <td>裁切</td>
+              <td>stencil 最高位元 <code>0x80</code> 當裁切遮罩，低 7 位元給填色計算，巢狀 <code>clip()</code> 自動取交集。</td>
+            </tr>
+            <tr>
+              <td>上色</td>
+              <td>單一 shader，支援純色、線性／放射（完整雙圓錐公式）／圓錐漸層、圖樣、影像與文字遮罩。</td>
+            </tr>
+            <tr>
+              <td>合成</td>
+              <td>Porter-Duff 運算以預乘 alpha 對應
+                <code>blendFunc</code>，無界運算會額外把形狀以外清成透明。混合模式（multiply、overlay、hue……）需要讀取目的地顏色：先把圖形畫進離屏圖層，再複製目的地區域，由混合
+                shader 依 W3C Compositing 規格計算。</td>
+            </tr>
+            <tr>
+              <td>文字</td>
+              <td>由離屏 2D canvas 依目前的縮放倍率把字形點陣化成 alpha 遮罩，再由 WebGL 以任意樣式上色。</td>
+            </tr>
+            <tr>
+              <td>濾鏡 / 陰影</td>
+              <td>繪圖先畫進離屏圖層（WebGL 2 為 MSAA），再執行 shader pass：可分離高斯模糊、色彩矩陣、陰影上色與疊合、自訂 GLSL。每個 pass 都用 scissor
+                限制在圖形外框加上擴散範圍內。</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section data-sec>
+        <h2 id="support">支援度總表</h2>
+        <p><span class="badge ok">完整</span> 與規格相同 · <span class="badge part">部分</span> 有已知差異 · <span
+            class="badge no">未實作</span> 屬性可讀寫，但不影響繪圖</p>
+        <div class="tablewrap">
+          <table>
+            <tr>
+              <th>類別</th>
+              <th>API</th>
+              <th>狀態</th>
+            </tr>
+            <tr>
+              <td>狀態 / 變換</td>
+              <td><code>save</code> <code>restore</code> <code>reset</code> <code>scale</code> <code>rotate</code>
+                <code>translate</code> <code>transform</code> <code>setTransform</code> <code>getTransform</code>
+                <code>resetTransform</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>樣式</td>
+              <td><code>fillStyle</code> <code>strokeStyle</code> 漸層 ×3 <code>createPattern</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>線條</td>
+              <td><code>lineWidth</code> <code>lineCap</code> <code>lineJoin</code> <code>miterLimit</code>
+                <code>setLineDash</code> <code>getLineDash</code> <code>lineDashOffset</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>合成</td>
+              <td><code>globalAlpha</code> <code>globalCompositeOperation</code>（全部 26 種）</td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>矩形 / 路徑 / 繪製</td>
+              <td>全部方法</td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>文字</td>
+              <td><code>fillText</code> <code>strokeText</code> <code>measureText</code> 與所有文字屬性</td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>影像</td>
+              <td><code>drawImage</code> <code>imageSmoothingEnabled</code> <code>imageSmoothingQuality</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>像素</td>
+              <td><code>createImageData</code> <code>getImageData</code> <code>putImageData</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>濾鏡 / 陰影</td>
+              <td><code>filter</code>（CSS 濾鏡，<code>url()</code> 除外）<code>shadow*</code></td>
+              <td><span class="badge ok">完整</span></td>
+            </tr>
+            <tr>
+              <td>擴充</td>
+              <td><code>createShaderFilter</code> <code>applyFilter</code> <code>pixelRatio</code>
+                <code>getContextHiDPI</code></td>
+              <td>WebGL2D 專屬</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section data-sec>
+        <h2 id="sharp">讓畫面更清晰</h2>
+        <p>畫面模糊最常見的原因是<b>高解析度螢幕</b>：Retina 螢幕的 <code>devicePixelRatio</code> 是 2（甚至 3）。如果 canvas 的
+          <code>width</code>/<code>height</code>（backing store）等於 CSS 尺寸，瀏覽器就得把每個像素放大成 2×2 顯示，線條與文字就會糊掉。</p>
+        <div class="tablewrap">
+          <table>
+            <tr>
+              <th>做法</th>
+              <th>說明</th>
+            </tr>
+            <tr>
+              <td><b>1. 使用 <code>pixelRatio</code>（建議）</b></td>
+              <td>讓 backing store = CSS 尺寸 × dpr，並告訴 WebGL2D 這個比例。繪圖座標仍是 CSS
+                像素，函式庫內部以實體像素渲染；曲線分段、圓角與文字的點陣化解析度也會跟著提高。和原生的 <code>ctx.scale(dpr, dpr)</code>
+                寫法不同，<code>setTransform</code>、<code>resetTransform</code>、<code>reset</code>
+                不會把縮放清掉，<code>isPointInPath</code> 也可以直接使用 CSS 座標（例如 <code>event.offsetX</code>）。</td>
+            </tr>
+            <tr>
+              <td><b>2. 保持 MSAA 反鋸齒</b></td>
+              <td><code>antialias</code> 預設為 <code>true</code>，請不要關閉。</td>
+            </tr>
+            <tr>
+              <td><b>3. 細線對齊像素</b></td>
+              <td>和原生 Canvas 一樣，在整數座標畫奇數寬度的線（例如 1px），線會跨在兩個像素之間而變淡。可以把座標加 0.5（<code>moveTo(10.5, 0)</code>），或在
+                <code>pixelRatio ≥ 2</code> 時直接忽略這個問題。</td>
+            </tr>
+            <tr>
+              <td><b>4. 像素風格的影像</b></td>
+              <td>放大點陣圖時設定 <code>imageSmoothingEnabled = false</code>；若 canvas 本身被 CSS 放大，可以再加上 CSS
+                <code>image-rendering: pixelated</code>。</td>
+            </tr>
+            <tr>
+              <td><b>5. 視窗大小改變時</b></td>
+              <td>重新設定 backing store 尺寸（或重新呼叫 <code>getContextHiDPI</code>）並重畫。把視窗拖到不同 dpr 的螢幕時，也要重新設定。</td>
+            </tr>
+          </table>
+        </div>
+        <pre class="static"><code>// 最簡單：一行建立高解析度 context（CSS 尺寸 400×300）
+const ctx = WebGL2D.getContextHiDPI(canvas, { width: 400, height: 300 });
+
+// 等同於：
+const dpr = window.devicePixelRatio || 1;
+canvas.style.width = '400px';  canvas.style.height = '300px';
+canvas.width = 400 * dpr;      canvas.height = 300 * dpr;
+const ctx2 = WebGL2D.getContext(canvas, { pixelRatio: dpr });
+
+// 之後一律以 CSS 像素繪圖
+ctx.fillRect(10, 10, 100, 50);</code></pre>
+        <div class="note"><code>getImageData</code> / <code>putImageData</code> / <code>createImageData</code> 是直接操作
+          backing store，座標與尺寸都以<b>實體像素</b>為單位（與原生 Canvas 相同）。<code>pixelRatio = 2</code> 時，CSS 座標 (x, y) 對應到像素 (2x, 2y)。
+        </div>
+      </section>
+
+      <!-- ============================================================ 建立 -->
+      <section data-sec>
+        <h2 id="entry">建立 Context</h2>
+
+        <article class="api" data-native="false">
+          <div class="sig">WebGL2D.getContext(canvas, options?) <span class="ret">→ WebGL2DRenderingContext</span></div>
+          <p>取得（或建立）canvas 的 WebGL2D context。同一個 canvas 重複呼叫會回傳同一個物件。</p>
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>options</th>
+                <th>預設</th>
+                <th>說明</th>
+              </tr>
+              <tr>
+                <td><code>alpha</code></td>
+                <td><code>true</code></td>
+                <td>畫布是否有透明通道</td>
+              </tr>
+              <tr>
+                <td><code>antialias</code></td>
+                <td><code>true</code></td>
+                <td>MSAA 反鋸齒</td>
+              </tr>
+              <tr>
+                <td><code>pixelRatio</code></td>
+                <td><code>1</code></td>
+                <td>每個繪圖座標單位對應的實體像素數；<code>'auto'</code> 使用 <code>devicePixelRatio</code>。canvas 的 backing store
+                  尺寸要自己設定，或改用 <code>getContextHiDPI</code></td>
+              </tr>
+              <tr>
+                <td><code>webgl2</code></td>
+                <td><code>true</code></td>
+                <td><code>false</code> 時強制使用 WebGL 1</td>
+              </tr>
+              <tr>
+                <td><code>preserveDrawingBuffer</code></td>
+                <td><code>true</code></td>
+                <td>保留畫面內容（Canvas 2D 語意）；<code>false</code> 較快，但每格都必須整個重畫</td>
+              </tr>
+              <tr>
+                <td><code>desynchronized</code> / <code>powerPreference</code></td>
+                <td><code>false</code> / <code>'default'</code></td>
+                <td>直接傳給 WebGL</td>
+              </tr>
+            </table>
+          </div>
+          <script type="text/x-example">
+// 對同一個 canvas 重複呼叫，會拿到同一個 context
+const c = WebGL2D.getContext(canvas);
+log('同一個物件：', c === ctx);
+log('使用 WebGL 2：', c.isWebGL2);
+
+c.fillStyle = '#2457d6';
+c.fillRect(20, 20, 280, 160);
+c.fillStyle = 'white';
+c.font = 'bold 28px system-ui, sans-serif';
+c.fillText('WebGL2D.getContext', 30, 110);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">WebGL2D.getContextHiDPI(canvas, options?) <span class="ret">→ WebGL2DRenderingContext</span>
+          </div>
+          <p>建立高解析度 context 的捷徑：把 canvas 的 backing store 設為 CSS 尺寸 × <code>devicePixelRatio</code>，設定
+            <code>canvas.style</code> 的寬高，並啟用對應的 <code>pixelRatio</code>。<code>options.width</code>/<code>height</code>
+            是 CSS 尺寸（預設為 canvas 目前的 <code>width</code>/<code>height</code>）；<code>options.pixelRatio</code> 可以覆寫
+            dpr；<code>setStyle: false</code> 則不更動 CSS。其他選項與 <code>getContext</code> 相同。</p>
+          <script type="text/x-example">
+const c = document.createElement('canvas');
+const hctx = WebGL2D.getContextHiDPI(c, { width: 150, height: 90 });
+log('CSS 尺寸 150×90 → backing store ' + c.width + '×' + c.height + '，pixelRatio = ' + hctx.pixelRatio);
+
+hctx.fillStyle = '#e0e7ff';
+hctx.fillRect(0, 0, 150, 90);
+hctx.fillStyle = '#1e3a8a';
+hctx.font = 'bold 18px system-ui, sans-serif';
+hctx.fillText('HiDPI 清晰', 14, 52);       // 仍然以 CSS 像素繪圖
+
+ctx.drawImage(c, 20, 20, 150, 90);        // 以 CSS 尺寸貼回主畫布
+hctx.gl.getExtension('WEBGL_lose_context')?.loseContext();
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">ctx.pixelRatio <span class="ret">number = 1</span></div>
+          <p>每個繪圖座標單位對應的實體像素數。設為 <code>devicePixelRatio</code> 並把 backing store
+            放大同樣倍數，就能在高解析度螢幕上得到清晰的線條與文字。路徑、變換、<code>isPointInPath</code> 都使用 CSS 座標；像素操作 API 使用實體像素。</p>
+          <script type="text/x-example">
+const pr = ctx.pixelRatio;
+log('devicePixelRatio =', devicePixelRatio, '，ctx.pixelRatio =', pr);
+if (pr === 1) log('（你的螢幕 dpr = 1，左右兩邊看起來會一樣）');
+
+function draw(c) {
+  c.font = '15px Georgia, serif';
+  c.fillText('Sharp text', 8, 28);
+  c.lineWidth = 1;
+  c.beginPath(); c.arc(70, 90, 40, 0, Math.PI * 2); c.stroke();
+  for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(10, 145 + i * 6); c.lineTo(140, 140 + i * 6); c.stroke(); }
+}
+
+// 左：模擬 pixelRatio = 1，先畫在低解析度畫布再放大貼上 → 模糊
+const low = document.createElement('canvas');
+low.width = 150; low.height = 190;
+const c1 = new WebGL2D.WebGL2DRenderingContext(low, { pixelRatio: 1 });
+draw(c1);
+ctx.drawImage(low, 5, 5, 150, 190);
+c1.gl.getExtension('WEBGL_lose_context')?.loseContext();
+
+// 右：直接以目前的 pixelRatio 繪製 → 清晰
+ctx.translate(165, 5);
+draw(ctx);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">WebGL2D.install() <span class="ret">→ void</span></div>
+          <p>修補 <code>HTMLCanvasElement.prototype.getContext</code>，之後
+            <code>canvas.getContext('webgl-2d', options)</code> 會回傳 WebGL2D context；其他類型照常交給原生實作。</p>
+          <script type="text/x-example">
+WebGL2D.install();
+const c = canvas.getContext('webgl-2d');
+log("canvas.getContext('webgl-2d') === ctx：", c === ctx);
+
+c.fillStyle = 'seagreen';
+c.beginPath();
+c.arc(160, 100, 70, 0, Math.PI * 2);
+c.fill();
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">new WebGL2D.WebGL2DRenderingContext(canvas, options?)</div>
+          <p>直接建構，不經過快取，每次都會建立新的 WebGL context。一般請使用 <code>getContext</code>。</p>
+          <script type="text/x-example">
+// 在另一個 canvas 上建立獨立的 context，再把結果畫回主畫布
+const other = document.createElement('canvas');
+other.width = 200; other.height = 100;
+const c2 = new WebGL2D.WebGL2DRenderingContext(other, { antialias: true });
+c2.fillStyle = 'tomato';
+c2.fillRect(0, 0, 200, 100);
+c2.fillStyle = 'white';
+c2.font = 'bold 22px system-ui, sans-serif';
+c2.fillText('另一個 context', 22, 58);
+
+ctx.drawImage(other, 60, 50);
+
+// 用完請釋放：瀏覽器同時能存在的 WebGL context 數量有限
+c2.gl.getExtension('WEBGL_lose_context')?.loseContext();
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">ctx.canvas · ctx.gl · ctx.isWebGL2</div>
+          <p><code>canvas</code>：所屬的 canvas 元素。<code>gl</code>：底層的 WebGL context（進階用途；必須保留 stencil
+            內容）。<code>isWebGL2</code>：是否使用 WebGL 2。</p>
+          <script type="text/x-example">
+const gl = ctx.gl;
+log('canvas backing store：', ctx.canvas.width + '×' + ctx.canvas.height, '（pixelRatio = ' + ctx.pixelRatio + '）');
+log('isWebGL2：', ctx.isWebGL2);
+log('GL 版本：', gl.getParameter(gl.VERSION));
+log('stencil 位元數：', gl.getParameter(gl.STENCIL_BITS));
+log('最大紋理尺寸：', gl.getParameter(gl.MAX_TEXTURE_SIZE));
+
+ctx.font = '20px system-ui, sans-serif';
+ctx.fillText(ctx.isWebGL2 ? '正在使用 WebGL 2' : '正在使用 WebGL 1', 20, 100);
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 狀態 -->
+      <section data-sec>
+        <h2 id="state">狀態</h2>
+
+        <article class="api">
+          <div class="sig">save() <span class="ret">→ void</span></div>
+          <p>把目前的繪圖狀態推入堆疊，包含變換矩陣、裁切區域，以及所有樣式、線條、文字、合成與陰影屬性。目前路徑<b>不屬於</b>狀態。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+ctx.save();                        // 存下：藍色、沒有變換
+
+ctx.fillStyle = '#e11d48';
+ctx.translate(160, 0);
+ctx.fillRect(20, 40, 120, 120);    // 紅色，在右側
+
+ctx.restore();                     // 回到藍色、沒有變換
+ctx.fillRect(20, 40, 120, 120);    // 藍色，在左側
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">restore() <span class="ret">→ void</span></div>
+          <p>從堆疊彈出並還原狀態（包括裁切區域）；堆疊為空時不做事。</p>
+          <script type="text/x-example">
+ctx.save();
+ctx.beginPath();
+ctx.arc(110, 100, 70, 0, Math.PI * 2);
+ctx.clip();
+ctx.fillStyle = '#f59e0b';
+ctx.fillRect(0, 0, 320, 200);       // 只畫在圓內
+ctx.restore();                      // 裁切解除
+
+ctx.fillStyle = 'rgba(36, 87, 214, 0.6)';
+ctx.fillRect(150, 40, 150, 120);    // 不受裁切
+
+ctx.restore();                      // 堆疊為空 → 不做事
+log('堆疊為空時呼叫 restore() 是安全的');
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">reset() <span class="ret">→ void</span></div>
+          <p>清空畫布、狀態堆疊與目前路徑，所有屬性回到預設值。</p>
+          <script type="text/x-example">
+ctx.fillStyle = 'purple';
+ctx.translate(100, 50);
+ctx.fillRect(0, 0, 100, 100);
+
+ctx.reset();                                   // 畫面清空，屬性回到預設
+log('fillStyle =', ctx.fillStyle);
+log('transform =', ctx.getTransform().toString());
+
+ctx.fillRect(20, 20, 60, 60);                  // 預設黑色、無變換
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">isContextLost() <span class="ret">→ boolean</span></div>
+          <p>WebGL context 是否已遺失（例如 GPU 重設）。遺失後不會自動恢復。</p>
+          <script type="text/x-example">
+const lost = ctx.isContextLost();
+log('isContextLost() =', lost);
+ctx.fillStyle = lost ? 'crimson' : 'seagreen';
+ctx.fillRect(20, 20, 280, 160);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">getContextAttributes() <span class="ret">→ object</span></div>
+          <p>回傳 <code>{ alpha, colorSpace, desynchronized, willReadFrequently }</code>。</p>
+          <script type="text/x-example">
+const attrs = ctx.getContextAttributes();
+log(attrs);
+ctx.font = '16px monospace';
+Object.entries(attrs).forEach(([k, v], i) => ctx.fillText(k + ': ' + v, 20, 40 + i * 30));
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 變換 -->
+      <section data-sec>
+        <h2 id="transform">變換</h2>
+        <p>矩陣格式為
+          <code>[a, b, c, d, e, f]</code>：<code>x' = a·x + c·y + e</code>、<code>y' = b·x + d·y + f</code>。<code>scale</code>、<code>rotate</code>、<code>translate</code>、<code>transform</code>
+          都會把新矩陣乘到目前矩陣上（新變換先作用在座標上）。參數含 <code>NaN</code> 或 <code>Infinity</code> 時會被忽略。</p>
+
+        <article class="api">
+          <div class="sig">scale(x, y)</div>
+          <p>縮放座標系統。位置、大小與線寬都會一起縮放。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#94a3b8';
+ctx.fillRect(10, 10, 60, 40);       // 原始大小
+
+ctx.scale(2, 1.5);
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(50, 10, 60, 40);       // x 放大 2 倍、y 放大 1.5 倍（位置也一樣）
+
+ctx.lineWidth = 4;
+ctx.strokeStyle = '#e11d48';
+ctx.strokeRect(50, 70, 60, 40);     // 線寬也跟著變形：直線比橫線粗
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">rotate(angle)</div>
+          <p>以目前原點為中心，順時針旋轉 <code>angle</code> 弧度。</p>
+          <script type="text/x-example">
+ctx.translate(160, 100);            // 先把原點移到中心
+for (let i = 0; i < 12; i++) {
+  ctx.rotate(Math.PI / 6);          // 每次再轉 30°
+  ctx.fillStyle = 'hsl(' + i * 30 + ' 75% 55%)';
+  ctx.fillRect(20, -6, 70, 12);
+}
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">translate(x, y)</div>
+          <p>移動原點。</p>
+          <script type="text/x-example">
+for (let i = 0; i < 5; i++) {
+  ctx.save();
+  ctx.translate(20 + i * 60, 40 + i * 25);
+  ctx.fillStyle = 'hsl(' + (200 + i * 30) + ' 70% 50%)';
+  ctx.fillRect(0, 0, 40, 40);       // 每個方塊都畫在 (0, 0)
+  ctx.restore();
+}
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">transform(a, b, c, d, e, f)</div>
+          <p>乘上任意仿射矩陣，可以做出斜切等效果。</p>
+          <script type="text/x-example">
+// 水平斜切：x' = x - 0.5·y + 120
+ctx.transform(1, 0, -0.5, 1, 120, 30);
+ctx.fillStyle = '#14b8a6';
+ctx.fillRect(0, 0, 140, 140);
+ctx.fillStyle = 'white';
+ctx.font = 'bold 30px system-ui, sans-serif';
+ctx.fillText('skew', 30, 82);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">setTransform(a, b, c, d, e, f) · setTransform(matrix?)</div>
+          <p>直接取代目前矩陣。<code>matrix</code> 可以是
+            <code>DOMMatrix</code>、<code>{a,b,c,d,e,f}</code>、<code>{m11,…,m42}</code>；省略時重設為單位矩陣。</p>
+          <script type="text/x-example">
+ctx.translate(500, 500);                 // 先隨意設一個變換……
+ctx.setTransform(1, 0, 0, 1, 40, 40);    // ……setTransform 直接取代它
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(0, 0, 100, 60);
+
+// 也可以傳入 DOMMatrix
+ctx.setTransform(new DOMMatrix().translateSelf(220, 110).rotateSelf(20));
+ctx.fillStyle = '#e11d48';
+ctx.fillRect(-50, -30, 100, 60);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">getTransform() <span class="ret">→ DOMMatrix</span></div>
+          <p>回傳目前矩陣的副本。</p>
+          <script type="text/x-example">
+ctx.translate(100, 50);
+ctx.scale(2, 2);
+const m = ctx.getTransform();
+log('a, b, c, d, e, f =', [m.a, m.b, m.c, m.d, m.e, m.f].join(', '));
+
+// 用矩陣把使用者座標換算成畫布座標
+const p = m.transformPoint({ x: 30, y: 20 });
+log('使用者座標 (30, 20) → 畫布座標 (' + p.x + ', ' + p.y + ')');
+ctx.fillRect(25, 15, 10, 10);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">resetTransform()</div>
+          <p>重設為單位矩陣，等同 <code>setTransform(1, 0, 0, 1, 0, 0)</code>。</p>
+          <script type="text/x-example">
+ctx.translate(200, 100);
+ctx.rotate(0.5);
+ctx.fillStyle = '#f59e0b';
+ctx.fillRect(-40, -40, 80, 80);
+
+ctx.resetTransform();
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(10, 10, 80, 80);       // 回到畫布原點
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 樣式 -->
+      <section data-sec>
+        <h2 id="styles">填色與描邊樣式</h2>
+
+        <article class="api">
+          <div class="sig">fillStyle <span class="ret">string | CanvasGradient | CanvasPattern = '#000000'</span></div>
+          <p>填色樣式。接受任何 CSS 顏色字串：hex、<code>rgb()</code>、<code>hsl()</code>、具名顏色……無效的值會被忽略。讀取時會正規化成 <code>#rrggbb</code> 或
+            <code>rgba(r, g, b, a)</code>。</p>
+          <script type="text/x-example">
+const colors = ['#2457d6', '#f80', 'rgb(16 185 129)', 'rgba(225, 29, 72, 0.5)', 'hsl(270 70% 60%)', 'gold'];
+colors.forEach((c, i) => {
+  ctx.fillStyle = c;
+  ctx.fillRect(10 + i * 51, 30, 45, 140);
+  log(c.padEnd(24), '→', ctx.fillStyle);    // 讀回正規化後的值
+});
+ctx.fillStyle = 'not-a-color';               // 無效 → 忽略
+log('設成無效值之後：', ctx.fillStyle);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">strokeStyle <span class="ret">string | CanvasGradient | CanvasPattern = '#000000'</span>
+          </div>
+          <p>描邊（<code>stroke</code>、<code>strokeRect</code>、<code>strokeText</code>）使用的樣式，規則與 <code>fillStyle</code> 相同。
+          </p>
+          <script type="text/x-example">
+ctx.lineWidth = 8;
+ctx.strokeStyle = 'crimson';
+ctx.strokeRect(20, 20, 120, 160);
+
+const g = ctx.createLinearGradient(170, 0, 300, 0);
+g.addColorStop(0, '#2457d6');
+g.addColorStop(1, '#14b8a6');
+ctx.strokeStyle = g;                         // 描邊也能使用漸層
+ctx.beginPath();
+ctx.arc(235, 100, 60, 0, Math.PI * 2);
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">createLinearGradient(x0, y0, x1, y1) <span class="ret">→ CanvasGradient</span></div>
+          <p>從 (x0, y0) 到 (x1, y1) 的線性漸層。座標屬於繪製當下的使用者空間；兩點相同時不繪製。</p>
+          <script type="text/x-example">
+const g = ctx.createLinearGradient(20, 0, 300, 0);
+g.addColorStop(0, '#ef4444');
+g.addColorStop(0.5, '#facc15');
+g.addColorStop(1, '#22c55e');
+ctx.fillStyle = g;
+ctx.fillRect(20, 20, 280, 70);
+
+// 斜向漸層
+const g2 = ctx.createLinearGradient(20, 110, 300, 180);
+g2.addColorStop(0, '#1e3a8a');
+g2.addColorStop(1, '#a5b4fc');
+ctx.fillStyle = g2;
+ctx.fillRect(20, 110, 280, 70);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">createRadialGradient(x0, y0, r0, x1, y1, r1) <span class="ret">→ CanvasGradient</span></div>
+          <p>兩個圓之間的放射漸層，完整實作雙圓錐公式（兩圓可以不同心）。半徑為負時拋出 <code>IndexSizeError</code>。</p>
+          <script type="text/x-example">
+// 同心圓
+const g1 = ctx.createRadialGradient(80, 100, 0, 80, 100, 70);
+g1.addColorStop(0, 'white');
+g1.addColorStop(1, '#2457d6');
+ctx.fillStyle = g1;
+ctx.fillRect(10, 30, 140, 140);
+
+// 不同心：球體高光
+const g2 = ctx.createRadialGradient(215, 75, 5, 240, 100, 70);
+g2.addColorStop(0, '#fff');
+g2.addColorStop(0.3, '#fb7185');
+g2.addColorStop(1, '#881337');
+ctx.fillStyle = g2;
+ctx.beginPath();
+ctx.arc(240, 100, 70, 0, Math.PI * 2);
+ctx.fill();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">createConicGradient(startAngle, x, y) <span class="ret">→ CanvasGradient</span></div>
+          <p>以 (x, y) 為中心的圓錐（角度）漸層，從 <code>startAngle</code>（弧度，0 為正 x 軸）開始順時針繞一圈。</p>
+          <script type="text/x-example">
+const g = ctx.createConicGradient(-Math.PI / 2, 160, 100);   // 從 12 點鐘方向開始
+const hues = ['red', 'yellow', 'lime', 'cyan', 'blue', 'magenta', 'red'];
+hues.forEach((c, i) => g.addColorStop(i / (hues.length - 1), c));
+ctx.fillStyle = g;
+ctx.beginPath();
+ctx.arc(160, 100, 90, 0, Math.PI * 2);
+ctx.fill();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">createPattern(image, repetition) <span class="ret">→ CanvasPattern | null</span></div>
+          <p>
+            <code>repetition</code>：<code>'repeat'</code>（預設）、<code>'repeat-x'</code>、<code>'repeat-y'</code>、<code>'no-repeat'</code>。建立時會擷取影像當下的內容；影像尚未載入時回傳
+            <code>null</code>。</p>
+          <script type="text/x-example">
+// tile 是預先準備好的 20×20 圖樣磚
+ctx.fillStyle = ctx.createPattern(tile, 'repeat');
+ctx.fillRect(10, 10, 140, 180);
+
+// repeat-y：只在垂直方向重複（圖樣原點在 (0, 0)，所以只會出現在 x = 0–20）
+ctx.translate(200, 0);
+ctx.fillStyle = ctx.createPattern(tile, 'repeat-y');
+ctx.fillRect(-30, 10, 140, 180);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">CanvasGradient.addColorStop(offset, color)</div>
+          <p>加入色標。<code>offset</code> 不在 [0, 1] 時拋出 <code>IndexSizeError</code>，顏色無效時拋出 <code>SyntaxError</code>。offset
+            相同的色標依加入順序排列，可以做出硬邊。</p>
+          <script type="text/x-example">
+const g = ctx.createLinearGradient(20, 0, 300, 0);
+g.addColorStop(0, '#2457d6');
+g.addColorStop(0.5, '#2457d6');
+g.addColorStop(0.5, '#f59e0b');             // 相同 offset → 硬邊
+g.addColorStop(1, 'rgba(245, 158, 11, 0)');  // 漸變到透明
+ctx.fillStyle = g;
+ctx.fillRect(20, 40, 280, 120);
+
+try { g.addColorStop(1.5, 'red'); } catch (e) { log(e.name + '：' + e.message); }
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">CanvasPattern.setTransform(matrix?)</div>
+          <p>設定圖樣自身的變換（在 context 的變換之前套用）。</p>
+          <script type="text/x-example">
+const p = ctx.createPattern(tile, 'repeat');
+p.setTransform(new DOMMatrix().rotateSelf(30).scaleSelf(2));   // 圖樣旋轉 30° 並放大 2 倍
+ctx.fillStyle = p;
+ctx.fillRect(10, 10, 300, 180);
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 線條 -->
+      <section data-sec>
+        <h2 id="lines">線條樣式</h2>
+
+        <article class="api">
+          <div class="sig">lineWidth <span class="ret">number = 1</span></div>
+          <p>線寬，單位是使用者空間（會隨變換縮放）。≤ 0 或非有限值會被忽略。</p>
+          <script type="text/x-example">
+[1, 2, 4, 8, 16].forEach((w, i) => {
+  ctx.lineWidth = w;
+  ctx.beginPath();
+  ctx.moveTo(20, 25 + i * 37);
+  ctx.lineTo(300, 25 + i * 37);
+  ctx.stroke();
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">lineCap <span class="ret">'butt' | 'round' | 'square' = 'butt'</span></div>
+          <p>線段端點的形狀。紅色參考線是路徑實際的起點與終點。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 22;
+ctx.strokeStyle = '#2457d6';
+['butt', 'round', 'square'].forEach((cap, i) => {
+  ctx.lineCap = cap;
+  ctx.beginPath();
+  ctx.moveTo(60, 40 + i * 60);
+  ctx.lineTo(260, 40 + i * 60);
+  ctx.stroke();
+});
+
+ctx.lineWidth = 1;
+ctx.lineCap = 'butt';
+ctx.strokeStyle = '#e11d48';
+ctx.beginPath();
+ctx.moveTo(60, 5); ctx.lineTo(60, 195);
+ctx.moveTo(260, 5); ctx.lineTo(260, 195);
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">lineJoin <span class="ret">'miter' | 'round' | 'bevel' = 'miter'</span></div>
+          <p>兩條線段相接處的形狀。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 18;
+ctx.strokeStyle = '#14b8a6';
+['miter', 'round', 'bevel'].forEach((j, i) => {
+  ctx.lineJoin = j;
+  const x = 25 + i * 100;
+  ctx.beginPath();
+  ctx.moveTo(x, 165);
+  ctx.lineTo(x + 35, 40);
+  ctx.lineTo(x + 70, 165);
+  ctx.stroke();
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">miterLimit <span class="ret">number = 10</span></div>
+          <p><code>lineJoin = 'miter'</code> 時，若斜接長度除以半線寬超過此值，該接合會改用 bevel。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 12;
+ctx.strokeStyle = '#8b5cf6';
+[10, 3].forEach((lim, i) => {
+  ctx.miterLimit = lim;
+  const x = 50 + i * 150;
+  ctx.beginPath();
+  ctx.moveTo(x, 175);
+  ctx.lineTo(x + 30, 45);
+  ctx.lineTo(x + 60, 175);
+  ctx.stroke();
+  log('miterLimit =', lim, i ? '→ 尖角被截成 bevel' : '→ 保留尖角');
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">setLineDash(segments)</div>
+          <p>設定虛線樣式（實線長、間隔長交替）。數量為奇數時會自動重複一次；含負數或非有限值時整個呼叫被忽略；傳入 <code>[]</code> 恢復實線。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 4;
+const patterns = [[10, 5], [20, 5, 5, 5], [0, 10], [15]];
+patterns.forEach((p, i) => {
+  ctx.setLineDash(p);
+  ctx.lineCap = p[0] === 0 ? 'round' : 'butt';   // 長度 0 + round → 圓點
+  ctx.beginPath();
+  ctx.moveTo(20, 30 + i * 45);
+  ctx.lineTo(300, 30 + i * 45);
+  ctx.stroke();
+  log(JSON.stringify(p).padEnd(14), '→ getLineDash() =', JSON.stringify(ctx.getLineDash()));
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">getLineDash() <span class="ret">→ number[]</span></div>
+          <p>回傳目前虛線樣式的副本。</p>
+          <script type="text/x-example">
+ctx.setLineDash([5, 10, 15]);        // 奇數個 → 自動重複成 6 個
+log(ctx.getLineDash());
+
+ctx.setLineDash([4, -1]);            // 含負數 → 整個呼叫被忽略
+log(ctx.getLineDash());
+
+ctx.lineWidth = 6;
+ctx.strokeRect(30, 30, 260, 140);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">lineDashOffset <span class="ret">number = 0</span></div>
+          <p>虛線樣式的起始偏移量。在動畫中遞增它，就能做出「行進的螞蟻」效果。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 6;
+ctx.setLineDash([20, 10]);
+[0, 7, 14, 21].forEach((off, i) => {
+  ctx.lineDashOffset = off;
+  ctx.strokeStyle = 'hsl(' + (200 + i * 50) + ' 70% 50%)';
+  ctx.beginPath();
+  ctx.moveTo(20, 35 + i * 42);
+  ctx.lineTo(300, 35 + i * 42);
+  ctx.stroke();
+  log('lineDashOffset =', off);
+});
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 合成 -->
+      <section data-sec>
+        <h2 id="compositing">合成</h2>
+
+        <article class="api">
+          <div class="sig">globalAlpha <span class="ret">number = 1</span></div>
+          <p>套用到所有繪圖（含影像與文字）的透明度，範圍 0–1，超出範圍的值會被忽略。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+for (let i = 0; i < 6; i++) {
+  ctx.globalAlpha = (i + 1) / 6;
+  ctx.fillRect(15 + i * 48, 40, 60, 120);
+}
+log('globalAlpha =', ctx.globalAlpha);
+ctx.globalAlpha = 2;                 // 超出範圍 → 忽略
+log('設成 2 之後：', ctx.globalAlpha);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">globalCompositeOperation <span class="ret">string = 'source-over'</span></div>
+          <p>新圖形（來源）與畫布既有內容（目的地）的合成方式，支援規格中的全部 26 個值，且都是精確計算。無效的值會被忽略。</p>
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>類別</th>
+                <th>值</th>
+                <th>實作方式</th>
+              </tr>
+              <tr>
+                <td>Porter-Duff</td>
+                <td><code>source-over</code> <code>source-in</code> <code>source-out</code> <code>source-atop</code>
+                  <code>destination-over</code> <code>destination-in</code> <code>destination-out</code>
+                  <code>destination-atop</code> <code>lighter</code> <code>copy</code> <code>xor</code></td>
+                <td>以預乘 alpha 的 <code>blendFunc</code>
+                  直接合成。<code>source-in</code>、<code>source-out</code>、<code>destination-in</code>、<code>destination-atop</code>、<code>copy</code>
+                  屬於「無界」運算，會依規格把圖形以外（裁切區內）清成透明</td>
+              </tr>
+              <tr>
+                <td>可分離混合模式</td>
+                <td><code>multiply</code> <code>screen</code> <code>overlay</code> <code>darken</code>
+                  <code>lighten</code> <code>color-dodge</code> <code>color-burn</code> <code>hard-light</code>
+                  <code>soft-light</code> <code>difference</code> <code>exclusion</code></td>
+                <td rowspan="2">先把圖形畫進離屏圖層，再複製目的地區域，由混合 shader 依 W3C Compositing
+                  規格計算：<code>Cr = (1−αb)·Cs + (1−αs)·Cb + αs·αb·B(cs, cb)</code>，最後以 source-over 合成。<code>screen</code>
+                  可以用 <code>blendFunc</code> 精確表達，所以直接合成</td>
+              </tr>
+              <tr>
+                <td>不可分離混合模式</td>
+                <td><code>hue</code> <code>saturation</code> <code>color</code> <code>luminosity</code></td>
+              </tr>
+            </table>
+          </div>
+          <script type="text/x-example">
+// Porter-Duff 運算：來源（紅）與目的地（藍）
+const ops = ['source-over', 'source-in', 'source-out', 'source-atop',
+             'destination-over', 'destination-in', 'destination-out', 'destination-atop',
+             'lighter', 'copy', 'xor', 'screen'];
+ops.forEach((op, i) => {
+  const x = (i % 4) * 80, y = Math.floor(i / 4) * 66;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, 80, 66);
+  ctx.clip();                                   // 每格各自裁切，避免無界運算清掉其他格
+  ctx.fillStyle = '#2457d6';
+  ctx.fillRect(x + 12, y + 6, 34, 34);          // 目的地
+  ctx.globalCompositeOperation = op;
+  ctx.fillStyle = '#e11d48';
+  ctx.beginPath();
+  ctx.arc(x + 46, y + 32, 17, 0, Math.PI * 2);
+  ctx.fill();                                   // 來源
+  ctx.restore();
+  ctx.font = '9px sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText(op, x + 4, y + 62);
+});
+ctx.globalCompositeOperation = 'not-an-op';     // 無效 → 忽略
+log('globalCompositeOperation =', ctx.globalCompositeOperation);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">globalCompositeOperation：混合模式</div>
+          <p>混合模式會依目的地顏色調整來源顏色，常用於調色、光影與疊圖。下面的範例以圖片為目的地、彩虹漸層為來源，最後一格是一般的
+            <code>source-over</code>，可以當作對照。混合模式同樣受裁切、<code>globalAlpha</code>、<code>filter</code> 與陰影影響。</p>
+          <script type="text/x-example">
+const modes = ['multiply', 'screen', 'overlay', 'darken',
+               'lighten', 'color-dodge', 'color-burn', 'hard-light',
+               'soft-light', 'difference', 'exclusion', 'hue',
+               'saturation', 'color', 'luminosity', 'source-over'];
+modes.forEach((m, i) => {
+  const x = (i % 4) * 80, y = Math.floor(i / 4) * 50;
+  ctx.drawImage(sampleImage, x + 2, y + 2, 76, 38);          // 目的地：圖片
+
+  const g = ctx.createLinearGradient(x + 2, 0, x + 78, 0);
+  g.addColorStop(0, '#ef4444');
+  g.addColorStop(0.5, '#22c55e');
+  g.addColorStop(1, '#3b82f6');
+  ctx.globalCompositeOperation = m;
+  ctx.fillStyle = g;
+  ctx.fillRect(x + 2, y + 2, 76, 38);                         // 來源：彩虹漸層
+  ctx.globalCompositeOperation = 'source-over';
+
+  ctx.font = '8px sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText(m, x + 3, y + 48);
+});
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 矩形 -->
+      <section data-sec>
+        <h2 id="rects">矩形</h2>
+        <p>這三個方法都不會影響目前路徑。</p>
+
+        <article class="api">
+          <div class="sig">fillRect(x, y, w, h)</div>
+          <p>以 <code>fillStyle</code> 填滿矩形。受變換、裁切、透明度與合成運算影響。寬高為負數時往反方向延伸。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(20, 20, 120, 80);
+ctx.fillStyle = 'rgba(225, 29, 72, 0.7)';
+ctx.fillRect(80, 60, 120, 80);
+ctx.fillStyle = '#14b8a6';
+ctx.fillRect(300, 185, -80, -60);   // 負的寬高：從 (300, 185) 往左上延伸
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">strokeRect(x, y, w, h)</div>
+          <p>以 <code>strokeStyle</code> 與目前的線條樣式描邊矩形。寬或高為 0 時描成一條線。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 8;
+ctx.strokeStyle = '#2457d6';
+ctx.strokeRect(20, 20, 130, 100);
+
+ctx.lineJoin = 'round';
+ctx.strokeStyle = '#f59e0b';
+ctx.strokeRect(170, 20, 130, 100);
+
+ctx.strokeStyle = '#e11d48';
+ctx.strokeRect(20, 160, 280, 0);    // 高為 0 → 畫成一條線
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">clearRect(x, y, w, h)</div>
+          <p>把區域內的像素設為透明。受變換與裁切影響，不受透明度與合成運算影響。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(0, 0, 320, 200);
+ctx.clearRect(30, 40, 100, 120);    // 挖出透明區域
+
+ctx.translate(230, 100);
+ctx.rotate(Math.PI / 4);
+ctx.clearRect(-40, -40, 80, 80);    // 也會受變換影響
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 路徑 -->
+      <section data-sec>
+        <h2 id="paths">路徑</h2>
+        <p>下列方法也存在於 <a href="#path2d">Path2D</a>。在 context 上呼叫時，點會用<b>當下</b>的變換矩陣轉換；參數不是有限數值時，呼叫會被忽略。</p>
+
+        <article class="api">
+          <div class="sig">beginPath()</div>
+          <p>清空目前路徑，開始一條新路徑。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 6;
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath();
+ctx.moveTo(20, 60);
+ctx.lineTo(300, 60);
+ctx.stroke();
+
+ctx.beginPath();          // 試著刪掉這行：上面那條線會被再描一次紅色
+ctx.strokeStyle = '#e11d48';
+ctx.moveTo(20, 140);
+ctx.lineTo(300, 140);
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">closePath()</div>
+          <p>從目前點畫直線回子路徑的起點，讓最後一個角也有正確的接合。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 12;
+// 左：沒有封閉，起點處是兩個端點
+ctx.beginPath();
+ctx.moveTo(30, 170); ctx.lineTo(85, 30); ctx.lineTo(140, 170); ctx.lineTo(30, 170);
+ctx.stroke();
+
+// 右：closePath()，起點處正確接合
+ctx.beginPath();
+ctx.moveTo(180, 170); ctx.lineTo(235, 30); ctx.lineTo(290, 170);
+ctx.closePath();
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">moveTo(x, y)</div>
+          <p>以 (x, y) 開始新的子路徑，不畫線。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 5;
+ctx.lineCap = 'round';
+ctx.beginPath();
+for (let i = 0; i < 6; i++) {
+  ctx.moveTo(25 + i * 50, 30);     // 每條線是各自的子路徑
+  ctx.lineTo(55 + i * 50, 170);
+}
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">lineTo(x, y)</div>
+          <p>從目前點畫直線到 (x, y)。還沒有子路徑時等同 <code>moveTo</code>。</p>
+          <script type="text/x-example">
+ctx.beginPath();
+for (let x = 20; x <= 300; x += 8) {
+  ctx.lineTo(x, 100 + Math.sin(x / 20) * 60);
+}
+ctx.lineWidth = 3;
+ctx.strokeStyle = '#2457d6';
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">quadraticCurveTo(cpx, cpy, x, y)</div>
+          <p>二次 Bézier 曲線，只有一個控制點（紅點）。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 4;
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath();
+ctx.moveTo(30, 170);
+ctx.quadraticCurveTo(160, 10, 290, 170);
+ctx.stroke();
+
+// 輔助線與控制點
+ctx.setLineDash([4, 4]);
+ctx.lineWidth = 1;
+ctx.strokeStyle = '#94a3b8';
+ctx.beginPath(); ctx.moveTo(30, 170); ctx.lineTo(160, 10); ctx.lineTo(290, 170); ctx.stroke();
+ctx.fillStyle = '#e11d48';
+ctx.beginPath(); ctx.arc(160, 10, 5, 0, Math.PI * 2); ctx.fill();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)</div>
+          <p>三次 Bézier 曲線，有兩個控制點。</p>
+          <script type="text/x-example">
+const P = [[20, 100], [90, 0], [230, 200], [300, 100]];
+ctx.lineWidth = 4;
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath();
+ctx.moveTo(...P[0]);
+ctx.bezierCurveTo(...P[1], ...P[2], ...P[3]);
+ctx.stroke();
+
+ctx.setLineDash([4, 4]);
+ctx.lineWidth = 1;
+ctx.strokeStyle = '#94a3b8';
+ctx.beginPath(); ctx.moveTo(...P[0]); ctx.lineTo(...P[1]); ctx.moveTo(...P[2]); ctx.lineTo(...P[3]); ctx.stroke();
+ctx.fillStyle = '#e11d48';
+for (const p of [P[1], P[2]]) { ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, Math.PI * 2); ctx.fill(); }
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">arc(x, y, radius, startAngle, endAngle, counterclockwise = false)</div>
+          <p>圓弧。已有子路徑時，會先畫直線到弧的起點。角度差 ≥ 2π 時畫整圓。半徑為負時拋出 <code>IndexSizeError</code>。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 6;
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath(); ctx.arc(60, 65, 40, 0, Math.PI * 2); ctx.stroke();           // 整圓
+ctx.beginPath(); ctx.arc(160, 65, 40, 0, Math.PI); ctx.stroke();              // 順時針：下半圓
+ctx.beginPath(); ctx.arc(260, 65, 40, 0, Math.PI, true); ctx.stroke();        // 逆時針：上半圓
+
+// 扇形：先 moveTo 圓心，再畫弧，最後 closePath
+ctx.fillStyle = '#f59e0b';
+ctx.beginPath();
+ctx.moveTo(160, 155);
+ctx.arc(160, 155, 38, Math.PI / 5, -Math.PI / 5);
+ctx.closePath();
+ctx.fill();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">arcTo(x1, y1, x2, y2, radius)</div>
+          <p>畫出同時與「目前點→(x1,y1)」及「(x1,y1)→(x2,y2)」相切的圓弧，常用來畫圓角。三點共線或半徑為 0 時，退化成 <code>lineTo(x1, y1)</code>。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 4;
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath();
+ctx.moveTo(30, 170);
+ctx.arcTo(30, 30, 290, 30, 50);     // 轉角 (30, 30)，半徑 50
+ctx.arcTo(290, 30, 290, 170, 20);   // 轉角 (290, 30)，半徑 20
+ctx.lineTo(290, 170);
+ctx.stroke();
+
+ctx.fillStyle = '#e11d48';           // 標出轉角點
+for (const [x, y] of [[30, 30], [290, 30]]) {
+  ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+}
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, counterclockwise = false)
+          </div>
+          <p>橢圓弧，<code>rotation</code> 是橢圓本身的旋轉角（弧度）。</p>
+          <script type="text/x-example">
+ctx.fillStyle = 'rgba(36, 87, 214, 0.35)';
+ctx.strokeStyle = '#1e3a8a';
+for (let i = 0; i < 6; i++) {
+  ctx.beginPath();
+  ctx.ellipse(160, 100, 120, 30, (i * Math.PI) / 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+}
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">rect(x, y, w, h)</div>
+          <p>在目前路徑加入一個封閉的矩形子路徑。</p>
+          <script type="text/x-example">
+ctx.beginPath();
+ctx.rect(20, 20, 120, 160);
+ctx.rect(180, 20, 120, 160);
+ctx.rect(60, 70, 200, 60);        // 三個矩形屬於同一條路徑
+ctx.fillStyle = '#14b8a6';
+ctx.fill('evenodd');              // evenodd：重疊處變成洞
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">roundRect(x, y, w, h, radii = 0)</div>
+          <p>圓角矩形。<code>radii</code> 可以是數字、<code>{x, y}</code>（橢圓角），或含 1–4 個值的陣列，對應方式與 CSS <code>border-radius</code>
+            相同。半徑太大時會等比縮小。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+ctx.beginPath(); ctx.roundRect(15, 20, 90, 70, 20); ctx.fill();                  // 單一半徑
+ctx.beginPath(); ctx.roundRect(115, 20, 90, 70, [30, 0]); ctx.fill();            // [左上&右下, 右上&左下]
+ctx.beginPath(); ctx.roundRect(215, 20, 90, 70, [0, 10, 20, 35]); ctx.fill();    // 四角各自設定
+
+ctx.fillStyle = '#f59e0b';
+ctx.beginPath(); ctx.roundRect(15, 110, 290, 70, { x: 60, y: 30 }); ctx.fill();  // 橢圓角
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 繪製 -->
+      <section data-sec>
+        <h2 id="drawing">填滿 / 描邊 / 裁切</h2>
+        <p><code>path</code> 參數必須是 <code>WebGL2D.Path2D</code>。<code>fillRule</code> 為 <code>'nonzero'</code>（預設）或
+          <code>'evenodd'</code>。</p>
+
+        <article class="api">
+          <div class="sig">fill(fillRule?) · fill(path, fillRule?)</div>
+          <p>以 <code>fillStyle</code> 填滿目前路徑或指定的 Path2D。未封閉的子路徑會自動視為封閉。</p>
+          <script type="text/x-example">
+// 自交的星形：比較 nonzero 與 evenodd
+function star(cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 4 * Math.PI) / 5;
+    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+  }
+  ctx.closePath();
+}
+ctx.fillStyle = '#8b5cf6';
+star(85, 108, 85);  ctx.fill();              // 'nonzero'（預設）
+star(235, 108, 85); ctx.fill('evenodd');     // 中間的五邊形是洞
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">stroke() · stroke(path)</div>
+          <p>以 <code>strokeStyle</code> 描邊。線寬依呼叫當下的變換計算，自身交疊的部分只上色一次。</p>
+          <script type="text/x-example">
+const p = new Path2D();
+p.moveTo(30, 160);
+p.bezierCurveTo(80, -20, 240, 220, 290, 40);
+p.lineTo(40, 60);
+
+ctx.lineWidth = 26;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.strokeStyle = 'rgba(20, 184, 166, 0.5)';
+ctx.stroke(p);                 // 半透明粗線：交叉處不會變深
+
+ctx.lineWidth = 2;
+ctx.strokeStyle = '#0f766e';
+ctx.stroke(p);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">clip(fillRule?) · clip(path, fillRule?)</div>
+          <p>把裁切區域設為「目前裁切區 ∩ 路徑」，之後的繪圖只會出現在裡面。用 <code>save()</code>/<code>restore()</code> 還原。</p>
+          <script type="text/x-example">
+ctx.save();
+ctx.beginPath();
+ctx.arc(160, 100, 85, 0, Math.PI * 2);
+ctx.clip();                          // 第一層：圓
+ctx.beginPath();
+ctx.rect(0, 60, 320, 80);
+ctx.clip();                          // 第二層：與橫條取交集
+
+for (let i = 0; i < 16; i++) {
+  ctx.fillStyle = 'hsl(' + i * 22 + ' 80% 55%)';
+  ctx.fillRect(i * 20, 0, 20, 200);
+}
+ctx.restore();
+
+ctx.strokeStyle = '#94a3b8';
+ctx.beginPath();
+ctx.arc(160, 100, 85, 0, Math.PI * 2);
+ctx.stroke();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">isPointInPath(x, y, fillRule?) · isPointInPath(path, x, y, fillRule?) <span class="ret">→
+              boolean</span></div>
+          <p>判斷畫布座標（不受變換影響）中的點是否在路徑內。可以用來做點擊偵測。</p>
+          <script type="text/x-example">
+ctx.beginPath();
+ctx.arc(110, 100, 75, 0, Math.PI * 2);
+ctx.arc(110, 100, 35, 0, Math.PI * 2, true);   // 反方向的內圓 → nonzero 下是洞
+ctx.fillStyle = '#dbeafe';
+ctx.fill();
+
+for (let y = 10; y < 200; y += 12) {
+  for (let x = 10; x < 320; x += 12) {
+    ctx.fillStyle = ctx.isPointInPath(x, y) ? '#2457d6' : '#cbd5e1';
+    ctx.fillRect(x - 2, y - 2, 4, 4);          // fillRect 不會改變目前路徑
+  }
+}
+log('(110, 100) 在路徑內？', ctx.isPointInPath(110, 100));
+log('(110, 40) 在路徑內？', ctx.isPointInPath(110, 40));
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">isPointInStroke(x, y) · isPointInStroke(path, x, y) <span class="ret">→ boolean</span></div>
+          <p>判斷點是否落在描邊範圍內，會考慮線寬、端點、接合與虛線。</p>
+          <script type="text/x-example">
+ctx.lineWidth = 18;
+ctx.setLineDash([40, 15]);
+ctx.beginPath();
+ctx.moveTo(20, 100);
+ctx.bezierCurveTo(100, -20, 220, 220, 300, 100);
+ctx.strokeStyle = '#fde68a';
+ctx.stroke();
+
+ctx.fillStyle = '#b45309';
+for (let y = 4; y < 200; y += 8) {
+  for (let x = 4; x < 320; x += 8) {
+    if (ctx.isPointInStroke(x, y)) ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+  }
+}
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 文字 -->
+      <section data-sec>
+        <h2 id="text">文字</h2>
+
+        <article class="api">
+          <div class="sig">fillText(text, x, y, maxWidth?)</div>
+          <p>填色繪製文字，可以使用漸層與圖樣。指定 <code>maxWidth</code> 且文字較寬時，會水平壓縮以符合寬度。</p>
+          <script type="text/x-example">
+ctx.font = 'bold 32px system-ui, sans-serif';
+ctx.fillStyle = '#1e293b';
+ctx.fillText('Hello 你好', 20, 50);
+
+const g = ctx.createLinearGradient(20, 0, 300, 0);
+g.addColorStop(0, '#2457d6');
+g.addColorStop(1, '#db2777');
+ctx.fillStyle = g;                                 // 文字也能使用漸層
+ctx.font = '40px Georgia, serif';
+ctx.fillText('Gradient text', 20, 110);
+
+ctx.font = '22px sans-serif';
+ctx.fillStyle = '#0f766e';
+ctx.fillText('maxWidth 會水平壓縮成 160px 寬', 20, 165, 160);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">strokeText(text, x, y, maxWidth?)</div>
+          <p>描邊繪製文字，使用目前的線寬、接合與虛線設定。</p>
+          <script type="text/x-example">
+ctx.font = 'bold 64px system-ui, sans-serif';
+ctx.lineWidth = 3;
+ctx.strokeStyle = '#2457d6';
+ctx.strokeText('Outline', 20, 80);
+
+ctx.setLineDash([6, 4]);
+ctx.lineJoin = 'round';
+ctx.strokeStyle = '#e11d48';
+ctx.strokeText('Dashed', 20, 165);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">measureText(text) <span class="ret">→ TextMetrics</span></div>
+          <p>回傳瀏覽器原生的
+            <code>TextMetrics</code>（<code>width</code>、<code>actualBoundingBox*</code>、<code>fontBoundingBox*</code>……）。
+          </p>
+          <script type="text/x-example">
+ctx.font = '44px Georgia, serif';
+const text = 'Typography';
+const m = ctx.measureText(text);
+const x = 40, y = 115;
+ctx.fillText(text, x, y);
+
+// 依量測結果畫出字形外框（紅）與前進寬度（藍）
+ctx.strokeStyle = '#e11d48';
+ctx.strokeRect(x - m.actualBoundingBoxLeft, y - m.actualBoundingBoxAscent,
+               m.actualBoundingBoxLeft + m.actualBoundingBoxRight,
+               m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+ctx.strokeStyle = '#2457d6';
+ctx.beginPath(); ctx.moveTo(x, y + 0.5); ctx.lineTo(x + m.width, y + 0.5); ctx.stroke();
+
+log('width =', m.width.toFixed(2));
+log('ascent / descent =', m.actualBoundingBoxAscent.toFixed(2), '/', m.actualBoundingBoxDescent.toFixed(2));
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">font <span class="ret">string = '10px sans-serif'</span></div>
+          <p>CSS font 簡寫。無效的值會被忽略；讀取時回傳正規化後的字串。</p>
+          <script type="text/x-example">
+const fonts = ['16px sans-serif', 'italic 22px Georgia, serif', 'bold 26px system-ui',
+               'small-caps 600 22px monospace', '28px "PingFang TC", "Noto Sans TC", sans-serif'];
+fonts.forEach((f, i) => {
+  ctx.font = f;
+  ctx.fillText(i === 4 ? '繁體中文 28px' : f, 15, 32 + i * 38);
+});
+ctx.font = 'not a font';             // 無效 → 忽略
+log('目前 font =', ctx.font);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">textAlign <span class="ret">'start' | 'end' | 'left' | 'right' | 'center' = 'start'</span>
+          </div>
+          <p>文字相對於 x 座標（紅線）的水平對齊方式。</p>
+          <script type="text/x-example">
+ctx.strokeStyle = '#e11d48';
+ctx.beginPath(); ctx.moveTo(160, 0); ctx.lineTo(160, 200); ctx.stroke();
+ctx.font = '20px sans-serif';
+['left', 'center', 'right', 'start', 'end'].forEach((a, i) => {
+  ctx.textAlign = a;
+  ctx.fillText('textAlign = ' + a, 160, 32 + i * 36);
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">textBaseline <span class="ret">'top' | 'hanging' | 'middle' | 'alphabetic' | 'ideographic' |
+              'bottom' = 'alphabetic'</span></div>
+          <p>文字相對於 y 座標（紅線）的垂直對齊方式。</p>
+          <script type="text/x-example">
+ctx.strokeStyle = '#e11d48';
+ctx.beginPath(); ctx.moveTo(0, 90); ctx.lineTo(320, 90); ctx.stroke();
+ctx.font = '26px sans-serif';
+['top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'].forEach((b, i) => {
+  ctx.textBaseline = b;
+  ctx.fillText('Ag', 10 + i * 52, 90);
+  ctx.save();
+  ctx.font = '10px sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.fillText(b, 10 + i * 52, 150);
+  ctx.restore();
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">direction <span class="ret">'ltr' | 'rtl' | 'inherit' = 'inherit'</span></div>
+          <p>文字方向，會影響 <code>textAlign</code> 的 <code>start</code> / <code>end</code>。<code>inherit</code> 視為 ltr。</p>
+          <script type="text/x-example">
+ctx.strokeStyle = '#e11d48';
+ctx.beginPath(); ctx.moveTo(160, 20); ctx.lineTo(160, 180); ctx.stroke();
+ctx.font = '22px sans-serif';
+ctx.textAlign = 'start';
+ctx.direction = 'ltr';
+ctx.fillText('ltr：start 在左', 160, 75);
+ctx.direction = 'rtl';
+ctx.fillText('rtl：start 在右', 160, 135);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">letterSpacing <span class="ret">string = '0px'</span></div>
+          <p>字元間距（CSS 長度）。</p>
+          <script type="text/x-example">
+ctx.font = '24px sans-serif';
+['0px', '4px', '10px', '-1px'].forEach((s, i) => {
+  ctx.letterSpacing = s;
+  ctx.fillText('letterSpacing ' + s, 15, 40 + i * 45);
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">wordSpacing <span class="ret">string = '0px'</span></div>
+          <p>單字間距（CSS 長度）。</p>
+          <script type="text/x-example">
+ctx.font = '24px sans-serif';
+['0px', '12px', '30px'].forEach((s, i) => {
+  ctx.wordSpacing = s;
+  ctx.fillText('one two three', 15, 50 + i * 55);
+  log('wordSpacing =', ctx.wordSpacing);
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">fontKerning <span class="ret">'auto' | 'normal' | 'none' = 'auto'</span></div>
+          <p>是否使用字型內建的字距調整。在「AV」「To」這類字母組合上最明顯。</p>
+          <script type="text/x-example">
+ctx.font = '56px Georgia, serif';
+ctx.fontKerning = 'normal';
+ctx.fillText('AVATAR To', 15, 80);
+ctx.fontKerning = 'none';
+ctx.fillText('AVATAR To', 15, 165);
+log('上：normal（有字距調整）；下：none');
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">fontStretch <span class="ret">'ultra-condensed' … 'normal' … 'ultra-expanded' =
+              'normal'</span></div>
+          <p>字寬。字型本身要有對應的寬度變體才看得出差異。</p>
+          <script type="text/x-example">
+ctx.font = '26px system-ui, sans-serif';
+['condensed', 'normal', 'expanded'].forEach((s, i) => {
+  ctx.fontStretch = s;
+  ctx.fillText('fontStretch ' + s, 15, 50 + i * 55);
+});
+log('fontStretch =', ctx.fontStretch);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">fontVariantCaps <span class="ret">'normal' | 'small-caps' | 'all-small-caps' | … =
+              'normal'</span></div>
+          <p>大小寫字形變體。</p>
+          <script type="text/x-example">
+ctx.font = '24px Georgia, serif';
+['normal', 'small-caps', 'all-small-caps', 'unicase'].forEach((v, i) => {
+  ctx.fontVariantCaps = v;
+  ctx.fillText('Hello World · ' + v, 15, 40 + i * 45);
+});
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">textRendering <span class="ret">'auto' | 'optimizeSpeed' | 'optimizeLegibility' |
+              'geometricPrecision' = 'auto'</span></div>
+          <p>文字繪製的取捨提示（例如連字、字距）。</p>
+          <script type="text/x-example">
+ctx.font = '22px Georgia, serif';
+['optimizeSpeed', 'optimizeLegibility', 'geometricPrecision'].forEach((r, i) => {
+  ctx.textRendering = r;
+  ctx.fillText('office · ' + r, 12, 50 + i * 55);
+});
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 影像 -->
+      <section data-sec>
+        <h2 id="images">影像</h2>
+
+        <article class="api">
+          <div class="sig">drawImage(image, dx, dy) · drawImage(image, dx, dy, dw, dh) · drawImage(image, sx, sy, sw,
+            sh, dx, dy, dw, dh)</div>
+          <p>可以繪製下列來源。來源矩形超出影像範圍時，目標矩形會依規格等比裁切。</p>
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>來源</th>
+                <th>影像大小（<code>sx/sy/sw/sh</code> 的單位）</th>
+                <th>說明</th>
+              </tr>
+              <tr>
+                <td>圖片：<code>HTMLImageElement</code>、<code>SVGImageElement</code>、<code>ImageBitmap</code></td>
+                <td>原始尺寸</td>
+                <td>紋理會快取；尚未載入完成時不畫</td>
+              </tr>
+              <tr>
+                <td><b>WebGL2D context</b>（另一個或自己）</td>
+                <td><b>CSS 尺寸</b>（<code>canvas.width ÷ pixelRatio</code>）</td>
+                <td>保留實體像素解析度，高解析度的 context 畫上去依然清晰。每次呼叫都會讀取最新內容</td>
+              </tr>
+              <tr>
+                <td>其他
+                  context：<code>CanvasRenderingContext2D</code>、<code>OffscreenCanvasRenderingContext2D</code>、WebGL
+                  context</td>
+                <td>backing store 尺寸</td>
+                <td>等同傳入它的 <code>canvas</code></td>
+              </tr>
+              <tr>
+                <td>canvas：<code>HTMLCanvasElement</code>、<code>OffscreenCanvas</code></td>
+                <td>backing store 尺寸</td>
+                <td>每次呼叫都會讀取最新內容</td>
+              </tr>
+              <tr>
+                <td>影片：<code>HTMLVideoElement</code>、<code>VideoFrame</code></td>
+                <td><code>videoWidth × videoHeight</code></td>
+                <td>繪製目前的影格；<code>readyState &lt; 2</code>（還沒有影格）時不畫。要播放影片，請在 <code>requestAnimationFrame</code> 中每格呼叫一次
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p><code>createPattern</code> 和自訂濾鏡的 <code>sampler2D</code> uniform 也接受上述所有來源。</p>
+          <script type="text/x-example">
+// sampleImage 是預先畫好的 160×100 圖片
+ctx.drawImage(sampleImage, 5, 5);                                 // 原尺寸
+ctx.drawImage(sampleImage, 175, 5, 140, 60);                      // 縮放到指定大小
+ctx.drawImage(sampleImage, 50, 20, 60, 40, 5, 110, 135, 85);      // 只取來源的一部分再放大
+
+ctx.globalAlpha = 0.7;
+ctx.translate(245, 140);
+ctx.rotate(-0.25);
+ctx.drawImage(sampleImage, -55, -34, 110, 68);                    // 受透明度與變換影響
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">drawImage(context, …)：把另一個 context 畫上來</div>
+          <p>第 2 個 WebGL2D context 可以直接傳給 <code>drawImage</code>，常用於離屏圖層、快取複雜圖形或合成多個畫面。影像大小以第 2 個 context 的 CSS 尺寸計算，所以
+            <code>pixelRatio</code> 不同也能正確對齊；也可以用 <code>createPattern(context)</code> 把它當成圖樣。</p>
+          <script type="text/x-example">
+// 第 2 個 context：CSS 尺寸 160×100，依螢幕 dpr 以高解析度繪製
+const layer = WebGL2D.getContextHiDPI(document.createElement('canvas'), { width: 160, height: 100 });
+layer.fillStyle = '#1e3a8a';
+layer.fillRect(0, 0, 160, 100);
+layer.fillStyle = '#f59e0b';
+layer.beginPath(); layer.arc(80, 50, 34, 0, Math.PI * 2); layer.fill();
+layer.fillStyle = '#fff';
+layer.font = 'bold 20px system-ui, sans-serif';
+layer.textAlign = 'center';
+layer.fillText('ctx2', 80, 57);
+
+ctx.drawImage(layer, 5, 5);                                  // 原尺寸（CSS 160×100）
+ctx.drawImage(layer, 175, 5, 140, 60);                       // 縮放
+ctx.drawImage(layer, 40, 20, 80, 60, 5, 115, 106, 80);       // 取一部分（CSS 座標）
+
+ctx.fillStyle = ctx.createPattern(layer, 'repeat');          // 當作圖樣
+ctx.setTransform(0.35, 0, 0, 0.35, 120, 72);
+ctx.fillRect(0, 0, 560, 340);
+ctx.resetTransform();
+
+log('layer：CSS ' + 160 + '×' + 100 + '，backing store ' + layer.canvas.width + '×' + layer.canvas.height);
+layer.gl.getExtension('WEBGL_lose_context')?.loseContext();   // 用完釋放
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">drawImage(video, …)：繪製影片</div>
+          <p>傳入 <code>&lt;video&gt;</code> 會畫出目前的影格。這個範例用 <code>canvas.captureStream()</code> 即時產生一段影片，所以不需要額外的影片檔；實務上用
+            <code>&lt;video src="movie.mp4"&gt;</code> 也是同樣的寫法。要讓畫面跟著影片播放，請在 <code>requestAnimationFrame</code> 中每格重新呼叫
+            <code>drawImage</code>。</p>
+          <script type="text/x-example">
+// 產生一段即時影片：一個會變色、移動方塊的 canvas
+const src = document.createElement('canvas');
+src.width = 160; src.height = 90;
+const g = src.getContext('2d');
+let frame = 0;
+const paint = () => {
+  g.fillStyle = 'hsl(' + frame * 12 + ' 70% 45%)';
+  g.fillRect(0, 0, 160, 90);
+  g.fillStyle = '#fff';
+  g.fillRect(10 + (frame * 4) % 120, 30, 30, 30);
+  g.font = 'bold 14px sans-serif';
+  g.fillText('frame ' + frame, 8, 18);
+  frame++;
+};
+const video = document.createElement('video');
+video.muted = true;
+video.srcObject = src.captureStream(30);
+paint();
+const timer = setInterval(paint, 33);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+await Promise.race([video.play(), wait(2000)]);   // 等待開始播放（最多 2 秒）
+await wait(300);                                  // 再等幾個影格
+if (video.readyState < 2) log('這個環境無法播放媒體串流（readyState = ' + video.readyState + '），所以沒有畫出影格');
+
+ctx.drawImage(video, 10, 10, 192, 108);           // 目前影格（放大）
+ctx.drawImage(video, 212, 10, 96, 54);            // 縮小
+ctx.filter = 'grayscale(1)';
+ctx.drawImage(video, 212, 70, 96, 54);            // 影片也能套用濾鏡
+ctx.filter = 'none';
+ctx.font = '12px sans-serif';
+ctx.fillText('readyState = ' + video.readyState + '，' + video.videoWidth + '×' + video.videoHeight, 10, 140);
+
+clearInterval(timer);
+video.srcObject.getTracks().forEach((t) => t.stop());
+log('videoWidth × videoHeight =', video.videoWidth + '×' + video.videoHeight);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">drawImage(videoFrame, …)：繪製 VideoFrame</div>
+          <p>WebCodecs 的 <code>VideoFrame</code> 也可以直接繪製，例如來自
+            <code>VideoDecoder</code>、<code>MediaStreamTrackProcessor</code>，或像這個範例一樣從 canvas 建立。影像大小為
+            <code>displayWidth × displayHeight</code>。用完請呼叫 <code>frame.close()</code> 釋放記憶體。</p>
+          <script type="text/x-example">
+if (typeof VideoFrame === 'undefined') {
+  log('這個瀏覽器不支援 WebCodecs VideoFrame');
+} else {
+  const src = document.createElement('canvas');
+  src.width = 160; src.height = 90;
+  const g = src.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 160, 0);
+  grad.addColorStop(0, '#7c3aed'); grad.addColorStop(1, '#06b6d4');
+  g.fillStyle = grad; g.fillRect(0, 0, 160, 90);
+  g.fillStyle = '#fff'; g.font = 'bold 22px sans-serif'; g.fillText('VideoFrame', 14, 54);
+
+  const frame = new VideoFrame(src, { timestamp: 0 });
+  ctx.drawImage(frame, 10, 10);                       // 原尺寸
+  ctx.drawImage(frame, 180, 10, 130, 73);             // 縮放
+  ctx.save();
+  ctx.translate(90, 150); ctx.rotate(-0.12);
+  ctx.drawImage(frame, 0, 0, 160, 90, -70, -30, 140, 60);   // 旋轉
+  ctx.restore();
+  log('displayWidth × displayHeight =', frame.displayWidth + '×' + frame.displayHeight);
+  frame.close();
+}
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">imageSmoothingEnabled <span class="ret">boolean = true</span></div>
+          <p><code>false</code> 時使用最近鄰取樣（像素風格），同時影響 <code>drawImage</code> 與圖樣。</p>
+          <script type="text/x-example">
+// 把 20×20 的 tile 放大 7 倍
+ctx.imageSmoothingEnabled = true;
+ctx.drawImage(tile, 10, 30, 140, 140);
+ctx.imageSmoothingEnabled = false;
+ctx.drawImage(tile, 170, 30, 140, 140);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">imageSmoothingQuality <span class="ret">'low' | 'medium' | 'high' = 'low'</span></div>
+          <p>影像縮放時的取樣品質，作用在 <code>drawImage</code> 和圖樣上；<code>imageSmoothingEnabled = false</code>
+            時不起作用。每個像素在來源影像上涵蓋的範圍（footprint）由 CPU 依「變換 × 縮放 × pixelRatio」算出，所以旋轉、斜切也能正確處理。重複圖樣的每個取樣點會各自折返，不會出現接縫。</p>
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>值</th>
+                <th>縮小</th>
+                <th>放大</th>
+              </tr>
+              <tr>
+                <td><code>'low'</code></td>
+                <td>雙線性，單一取樣點（縮小很多時會出現疊紋）</td>
+                <td>雙線性</td>
+              </tr>
+              <tr>
+                <td><code>'medium'</code></td>
+                <td>在 footprint 內做 box 超取樣，效果相當於 mipmap</td>
+                <td>雙線性</td>
+              </tr>
+              <tr>
+                <td><code>'high'</code></td>
+                <td>Mitchell 濾波超取樣（半徑 2 個輸出像素），兼顧銳利與抗鋸齒</td>
+                <td>Mitchell–Netravali 雙三次插值（B = C = ⅓）</td>
+              </tr>
+            </table>
+          </div>
+          <p>規格把這個屬性定義為給瀏覽器的品質偏好，各瀏覽器的實際演算法不同。在無頭 Chrome（SwiftShader）中實測：<code>low</code> 的所有情況，以及 <code>high</code>
+            的放大，都和原生結果逐像素一致；原生 Chrome 在這個環境下縮小時不會額外濾波，WebGL2D 的 <code>medium</code>/<code>high</code> 則會確實抗鋸齒。縮小倍率超過約 16
+            倍（medium）或 6 倍（high）時，取樣點數已達上限，會逐漸退化。</p>
+          <script type="text/x-example">
+// 細條紋 + 棋盤：縮小時最容易產生疊紋（moiré）
+const src = document.createElement('canvas');
+src.width = src.height = 200;
+const g = src.getContext('2d');
+g.fillStyle = '#fff'; g.fillRect(0, 0, 200, 200);
+for (let x = 0; x < 200; x += 4) { g.fillStyle = x % 8 ? '#1e40af' : '#f59e0b'; g.fillRect(x, 0, 2, 100); }
+for (let y = 100; y < 200; y += 5)
+  for (let x = 0; x < 200; x += 5)
+    if (((x + y) / 5) % 2) { g.fillStyle = '#111'; g.fillRect(x, y, 5, 5); }
+
+['low', 'medium', 'high'].forEach((q, i) => {
+  const x = 10 + i * 105;
+  ctx.imageSmoothingQuality = q;
+  ctx.drawImage(src, x, 10, 64, 64);                // 上：縮小約 3 倍
+  ctx.drawImage(tile, 4, 4, 8, 8, x, 92, 96, 96);   // 下：放大 12 倍
+  ctx.font = '12px sans-serif';
+  ctx.fillText(q, x + 68, 46);
+});
+log('imageSmoothingQuality =', ctx.imageSmoothingQuality);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">imageSmoothingQuality：旋轉的圖樣</div>
+          <p>圖樣同樣套用取樣品質。這個例子把圖樣縮小並旋轉，<code>low</code> 會出現明顯的疊紋。</p>
+          <script type="text/x-example">
+const src = document.createElement('canvas');
+src.width = src.height = 40;
+const g = src.getContext('2d');
+g.fillStyle = '#fff'; g.fillRect(0, 0, 40, 40);
+g.fillStyle = '#111';
+for (let x = 0; x < 40; x += 4) g.fillRect(x, 0, 2, 40);   // 2px 寬的條紋
+
+['low', 'medium', 'high'].forEach((q, i) => {
+  ctx.save();
+  ctx.imageSmoothingQuality = q;
+  const p = ctx.createPattern(src, 'repeat');
+  p.setTransform(new DOMMatrix().rotateSelf(25).scaleSelf(0.3));   // 縮小到 30% 並旋轉
+  ctx.fillStyle = p;
+  ctx.fillRect(10 + i * 105, 10, 95, 160);
+  ctx.restore();
+  ctx.font = '12px sans-serif';
+  ctx.fillText(q, 10 + i * 105, 188);
+});
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 像素 -->
+      <section data-sec>
+        <h2 id="pixels">像素操作</h2>
+
+        <article class="api">
+          <div class="sig">createImageData(sw, sh) · createImageData(imageData) <span class="ret">→ ImageData</span>
+          </div>
+          <p>建立全透明的 <code>ImageData</code>；傳入既有的 ImageData 時，建立同尺寸的新物件。尺寸以實體像素為單位，所以範例會乘上 <code>pr</code>（pixelRatio）。
+          </p>
+          <script type="text/x-example">
+const pr = ctx.pixelRatio;         // 像素操作以實體像素為單位
+const img = ctx.createImageData(160 * pr, 100 * pr);
+for (let y = 0; y < img.height; y++) {
+  for (let x = 0; x < img.width; x++) {
+    const i = (y * img.width + x) * 4;
+    img.data[i] = (x / pr) * 1.6;   // R
+    img.data[i + 1] = (y / pr) * 2.5; // G
+    img.data[i + 2] = 200;          // B
+    img.data[i + 3] = 255;          // A
+  }
+}
+ctx.putImageData(img, 80 * pr, 50 * pr);
+log('尺寸：' + img.width + '×' + img.height + '，data 長度：' + img.data.length);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">getImageData(sx, sy, sw, sh) <span class="ret">→ ImageData</span></div>
+          <p>讀回非預乘 alpha 的 RGBA 像素，超出畫布的部分為透明黑。這個呼叫會讓 CPU 等待 GPU，請避免在動畫迴圈中頻繁使用。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(10, 20, 120, 160);
+ctx.fillStyle = 'rgba(225, 29, 72, 0.5)';
+ctx.fillRect(60, 60, 120, 80);
+
+const pr = ctx.pixelRatio;                       // 像素座標 = CSS 座標 × pr
+const px = ctx.getImageData(100 * pr, 100 * pr, 1, 1).data;
+log('(100, 100) 的 RGBA =', Array.from(px).join(', '));
+
+// 讀出一塊區域，轉成灰階後放到右邊
+const block = ctx.getImageData(10 * pr, 20 * pr, 120 * pr, 160 * pr);
+for (let i = 0; i < block.data.length; i += 4) {
+  const g = 0.3 * block.data[i] + 0.59 * block.data[i + 1] + 0.11 * block.data[i + 2];
+  block.data[i] = block.data[i + 1] = block.data[i + 2] = g;
+}
+ctx.putImageData(block, 190 * pr, 20 * pr);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">putImageData(imageData, dx, dy, dirtyX?, dirtyY?, dirtyW?, dirtyH?)</div>
+          <p>直接取代像素：不受變換、裁切、透明度與合成運算影響。可以用 dirty 矩形只寫入一部分。</p>
+          <script type="text/x-example">
+ctx.fillStyle = '#f59e0b';
+ctx.fillRect(0, 0, 320, 200);
+
+const pr = ctx.pixelRatio;
+const img = ctx.createImageData(100 * pr, 100 * pr);
+for (let i = 0; i < img.data.length; i += 4) {
+  img.data[i] = 36; img.data[i + 1] = 87; img.data[i + 2] = 214;
+  img.data[i + 3] = 128;                              // 半透明
+}
+ctx.globalAlpha = 0.1;                                // 對 putImageData 沒有作用
+ctx.putImageData(img, 20 * pr, 50 * pr);              // 直接取代像素，不混合（看得到背景格子）
+ctx.putImageData(img, 180 * pr, 50 * pr, 25 * pr, 25 * pr, 50 * pr, 50 * pr);   // 只寫入 dirty 區域
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 濾鏡 -->
+      <section data-sec>
+        <h2 id="filters">濾鏡與陰影</h2>
+        <p>設定 <code>filter</code>
+          或陰影後，每次繪圖（<code>fill</code>、<code>stroke</code>、<code>fillRect</code>、<code>strokeRect</code>、<code>fillText</code>、<code>strokeText</code>、<code>drawImage</code>）都會先畫進離屏圖層，接著依序執行濾鏡的
+          shader pass，最後依裁切、<code>globalAlpha</code>
+          與合成模式貼回畫布。處理範圍只限於圖形外框加上模糊和陰影擴散的區域。濾鏡的長度（<code>blur</code>、<code>drop-shadow</code>、<code>shadowBlur</code>、<code>shadowOffset</code>）都以
+          CSS 像素計算，不受變換影響，也不會因 dpr 不同而改變外觀。</p>
+
+        <article class="api">
+          <div class="sig">filter <span class="ret">string | ShaderFilter | Array = 'none'</span></div>
+          <p>CSS
+            濾鏡字串，可以串接多個函式依序套用：<code>blur()</code>、<code>brightness()</code>、<code>contrast()</code>、<code>grayscale()</code>、<code>sepia()</code>、<code>saturate()</code>、<code>hue-rotate()</code>、<code>invert()</code>、<code>opacity()</code>、<code>drop-shadow()</code>。也可以設定
+            <a href="#createShaderFilter">ShaderFilter</a>，或是字串與 ShaderFilter 混合的陣列。無效的值會被忽略；不支援 <code>url()</code>。</p>
+          <script type="text/x-example">
+const filters = ['none', 'blur(3px)', 'grayscale(1)', 'sepia(1)',
+                 'saturate(3)', 'hue-rotate(90deg)', 'invert(1)', 'brightness(1.5)',
+                 'contrast(2)', 'opacity(0.4)', 'drop-shadow(3px 3px 2px)', 'sepia(1) blur(1px)'];
+filters.forEach((f, i) => {
+  const x = 4 + (i % 4) * 79, y = 4 + Math.floor(i / 4) * 66;
+  ctx.filter = f;
+  ctx.drawImage(sampleImage, x, y, 72, 45);
+  ctx.filter = 'none';
+  ctx.font = '9px sans-serif';
+  ctx.fillText(f, x, y + 58);
+});
+ctx.filter = 'blur(oops)';           // 無效 → 忽略
+log('filter =', ctx.filter);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">shadowColor · shadowBlur · shadowOffsetX · shadowOffsetY</div>
+          <p>陰影。<code>shadowColor</code> 預設為透明，只有在顏色不透明，且 <code>shadowBlur</code> 或位移不為 0 時才會畫出陰影。依規格，模糊的標準差為
+            <code>shadowBlur / 2</code>；陰影會在 <code>filter</code> 之後套用，並乘上 <code>globalAlpha</code>。</p>
+          <script type="text/x-example">
+ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+ctx.shadowBlur = 12;
+ctx.shadowOffsetX = 6;
+ctx.shadowOffsetY = 6;
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(25, 30, 120, 80);
+
+ctx.shadowColor = 'rgba(225, 29, 72, 0.9)';    // 位移 0 + 模糊 → 光暈
+ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
+ctx.shadowBlur = 18;
+ctx.lineWidth = 6;
+ctx.strokeStyle = '#be123c';
+ctx.beginPath(); ctx.arc(235, 70, 42, 0, Math.PI * 2); ctx.stroke();
+
+ctx.shadowColor = '#1e3a8a';                   // 不模糊 → 硬陰影
+ctx.shadowBlur = 0;
+ctx.shadowOffsetX = ctx.shadowOffsetY = 3;
+ctx.font = 'bold 40px system-ui, sans-serif';
+ctx.fillStyle = '#93c5fd';
+ctx.fillText('Shadow', 30, 175);
+log('shadowBlur =', ctx.shadowBlur, '，shadowColor =', ctx.shadowColor);
+</script>
+        </article>
+
+        <article class="api" id="createShaderFilter" data-native="false">
+          <div class="sig">createShaderFilter(source, uniforms?) <span class="ret">→ ShaderFilter</span></div>
+          <p>用 GLSL（ES 1.00）撰寫自訂濾鏡。<code>source</code> 必須定義 <code>vec4 effect(vec2 uv)</code>，並回傳<b>預乘 alpha</b>
+            的顏色。<code>uv</code> 是 0–1 的紋理座標，y 軸向上。編譯失敗時會拋出 <code>SyntaxError</code>，訊息附有 shader
+            的錯誤記錄，行號對應你的原始碼。可以直接使用下列內建項目：</p>
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>名稱</th>
+                <th>說明</th>
+              </tr>
+              <tr>
+                <td><code>vec4 texel(vec2 uv)</code></td>
+                <td>讀取輸入影像（預乘 alpha）；等同 <code>texture2D(u_src, uv)</code></td>
+              </tr>
+              <tr>
+                <td><code>vec2 toCSS(vec2 uv)</code> / <code>vec2 fromCSS(vec2 p)</code></td>
+                <td>uv 與 CSS 像素座標（左上為原點、y 向下）互相轉換</td>
+              </tr>
+              <tr>
+                <td><code>vec4 unpremultiply(vec4)</code> / <code>vec4 premultiply(vec4)</code></td>
+                <td>預乘 alpha 轉換</td>
+              </tr>
+              <tr>
+                <td><code>u_src</code> · <code>u_resolution</code> · <code>u_size</code> · <code>u_pixelRatio</code>
+                </td>
+                <td>輸入紋理、實體像素尺寸、CSS 像素尺寸、pixelRatio</td>
+              </tr>
+            </table>
+          </div>
+          <script type="text/x-example">
+const wave = ctx.createShaderFilter(`
+  uniform float u_amp;    // 振幅（CSS 像素）
+  uniform float u_freq;   // 頻率
+  vec4 effect(vec2 uv) {
+    vec2 p = toCSS(uv);                       // 轉成 CSS 像素座標
+    p.x += sin(p.y * u_freq) * u_amp;         // 依 y 做水平波浪位移
+    return texel(fromCSS(p));
+  }
+`, { u_amp: 6, u_freq: 0.1 });
+
+ctx.filter = wave;                  // 之後的繪圖都會套用這個濾鏡
+ctx.fillStyle = '#2457d6';
+ctx.fillRect(30, 25, 260, 50);
+ctx.font = 'bold 42px system-ui, sans-serif';
+ctx.fillText('Shader 濾鏡', 40, 150);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">ShaderFilter.setUniform(name, value) <span class="ret">→ ShaderFilter</span></div>
+          <p>設定 uniform 的值，下一次繪圖時生效。會依 shader 中宣告的型別自動選擇對應的設定方式。<code>value</code>
+            可以是數字或陣列（<code>float</code>、<code>vec*</code>、<code>int</code>、<code>mat*</code>）、布林值、CSS
+            顏色字串（<code>vec3</code>/<code>vec4</code>，數值範圍 0–1），或影像來源（<code>sampler2D</code>）。也可以在
+            <code>createShaderFilter</code> 的第二個參數一次給定。<code>uniformNames</code> 會列出可設定的 uniform。</p>
+          <script type="text/x-example">
+const pixelate = ctx.createShaderFilter(`
+  uniform float u_block;    // 馬賽克格子大小（CSS 像素）
+  vec4 effect(vec2 uv) {
+    vec2 p = toCSS(uv);
+    vec2 c = (floor(p / u_block) + 0.5) * u_block;   // 取格子中心
+    return texel(fromCSS(c));
+  }
+`);
+[2, 5, 10].forEach((b, i) => {
+  pixelate.setUniform('u_block', b);
+  ctx.filter = pixelate;
+  ctx.drawImage(sampleImage, 5 + i * 105, 60, 100, 62);
+});
+log('可設定的 uniform：', pixelate.uniformNames);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">uniform 型別：顏色字串與影像紋理</div>
+          <p><code>vec3</code>/<code>vec4</code> 的 uniform 可以直接傳入 CSS 顏色；<code>sampler2D</code> 可以傳入任何
+            <code>drawImage</code> 接受的影像來源。紋理的方向與 <code>u_src</code> 相同，也就是 y 向上，影像頂端在 v = 1。</p>
+          <script type="text/x-example">
+const duotone = ctx.createShaderFilter(`
+  uniform vec3 u_dark;
+  uniform vec3 u_light;
+  vec4 effect(vec2 uv) {
+    vec4 c = unpremultiply(texel(uv));
+    float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));    // 亮度
+    return premultiply(vec4(mix(u_dark, u_light, l), c.a));
+  }
+`, { u_dark: '#1e1b4b', u_light: '#fde68a' });
+ctx.filter = duotone;
+ctx.drawImage(sampleImage, 5, 20, 150, 94);
+
+const tinted = ctx.createShaderFilter(`
+  uniform sampler2D u_pattern;
+  vec4 effect(vec2 uv) {
+    vec2 q = fract(toCSS(uv) / 20.0);                    // 每 20px 重複一次
+    vec4 t = texture2D(u_pattern, vec2(q.x, 1.0 - q.y));
+    return texel(uv) * vec4(t.rgb, 1.0);                 // 以圖樣顏色相乘
+  }
+`, { u_pattern: tile });
+ctx.filter = tinted;
+ctx.drawImage(sampleImage, 165, 20, 150, 94);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">filter = [ ...字串或 ShaderFilter ]</div>
+          <p>陣列中的濾鏡依序套用，可以混合 CSS 濾鏡與自訂 shader。</p>
+          <script type="text/x-example">
+const rgbShift = ctx.createShaderFilter(`
+  uniform float u_shift;   // 色差位移（CSS 像素）
+  vec4 effect(vec2 uv) {
+    vec2 d = vec2(u_shift / u_size.x, 0.0);
+    vec4 r = texel(uv + d), g = texel(uv), b = texel(uv - d);
+    return vec4(r.r, g.g, b.b, max(max(r.a, g.a), b.a));
+  }
+`, { u_shift: 4 });
+
+ctx.filter = ['blur(0.5px)', rgbShift, 'drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45))'];
+ctx.font = 'bold 54px system-ui, sans-serif';
+ctx.fillStyle = '#f8fafc';
+ctx.fillText('GLITCH', 50, 95);
+ctx.fillStyle = '#e11d48';
+ctx.fillRect(50, 125, 220, 30);
+log('filter 是陣列：', Array.isArray(ctx.filter), '，長度', ctx.filter.length);
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">applyFilter(filter, x?, y?, w?, h?)</div>
+          <p>對畫布上<b>已經畫好</b>的內容做後製，例如整張畫面的暗角、調色或模糊。<code>filter</code> 的格式與 <code>ctx.filter</code> 相同。矩形以 CSS
+            像素計算，不受變換影響、受裁切影響，省略時處理整個畫布。濾鏡格式無效時拋出 <code>TypeError</code>。</p>
+          <script type="text/x-example">
+ctx.drawImage(sampleImage, 0, 0, 320, 200);       // 先正常畫好內容
+
+ctx.applyFilter('grayscale(1)', 0, 0, 160, 200);               // 左半：灰階
+ctx.applyFilter('blur(4px) brightness(1.2)', 160, 0, 160, 100); // 右上：模糊
+
+const vignette = ctx.createShaderFilter(`
+  vec4 effect(vec2 uv) {
+    float d = distance(uv, vec2(0.5));
+    return texel(uv) * smoothstep(0.8, 0.35, d);   // 越往外越暗
+  }
+`);
+ctx.applyFilter(vignette);                          // 整個畫布：暗角
+</script>
+        </article>
+
+        <article class="api" data-native="false">
+          <div class="sig">ShaderFilter.dispose()</div>
+          <p>釋放 shader program 與紋理。濾鏡用完後，特別是大量動態建立時，請記得呼叫。釋放後就不能再使用。</p>
+          <script type="text/x-example">
+// 編譯失敗會拋出 SyntaxError，訊息附有 GLSL 錯誤記錄（行號對應你的原始碼）
+try {
+  ctx.createShaderFilter(`
+    vec4 effect(vec2 uv) {
+      return texel(uv) * brightnes;   // 打錯變數名稱
+    }
+  `);
+} catch (e) {
+  log(e.name + '：' + e.message);
+}
+
+const f = ctx.createShaderFilter(`vec4 effect(vec2 uv) { return texel(uv).bgra; }`);
+ctx.filter = f;
+ctx.drawImage(sampleImage, 80, 50);
+ctx.filter = 'none';
+f.dispose();
+log('已釋放');
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ 其他 -->
+      <section data-sec>
+        <h2 id="misc">其他</h2>
+
+        <article class="api">
+          <div class="sig">drawFocusIfNeeded(element) · scrollPathIntoView() <span class="badge no">no-op</span></div>
+          <p>為了相容而保留，呼叫後不做任何事。（目前的瀏覽器原生並未實作 <code>scrollPathIntoView</code>。）</p>
+          <script type="text/x-example">
+ctx.beginPath();
+ctx.rect(40, 40, 240, 120);
+ctx.drawFocusIfNeeded(document.createElement('button'));   // 元素沒有焦點 → 不畫
+ctx.scrollPathIntoView?.();
+ctx.lineWidth = 3;
+ctx.stroke();
+log('兩個方法都可以安全呼叫');
+</script>
+        </article>
+      </section>
+
+      <!-- ============================================================ Path2D -->
+      <section data-sec>
+        <h2 id="path2d">Path2D</h2>
+        <p><code>WebGL2D.Path2D</code> 只記錄指令，在 <code>fill</code> / <code>stroke</code> / <code>clip</code>
+          時才以當下的變換展開，所以同一個 Path2D 可以畫在不同位置。它不會覆蓋全域的 <code>window.Path2D</code>。</p>
+
+        <article class="api">
+          <div class="sig">new Path2D() · new Path2D(path) · new Path2D(svgPathData)</div>
+          <p>建立空路徑、複製另一個 Path2D，或解析 SVG path data（M L H V C S Q T A Z，大小寫皆可；遇到語法錯誤時保留錯誤之前的部分）。</p>
+          <script type="text/x-example">
+// 1. 空路徑
+const box = new Path2D();
+box.rect(20, 40, 80, 80);
+
+// 2. 解析 SVG path data
+const heart = new Path2D('M 60 30 C 60 0 0 0 0 30 C 0 60 60 80 60 100 C 60 80 120 60 120 30 C 120 0 60 0 60 30 Z');
+
+// 3. 複製另一個 Path2D
+const copy = new Path2D(heart);
+
+ctx.fillStyle = '#2457d6';
+ctx.fill(box);
+ctx.translate(115, 20);
+ctx.fillStyle = '#e11d48';
+ctx.fill(heart);
+ctx.translate(70, 60);
+ctx.globalAlpha = 0.5;
+ctx.fill(copy);
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">path.addPath(otherPath, transform?)</div>
+          <p>把另一個 Path2D 的副本加入這條路徑，可以同時套用 <code>DOMMatrix2DInit</code> 變換。</p>
+          <script type="text/x-example">
+const petal = new Path2D();
+petal.ellipse(0, -45, 16, 40, 0, 0, Math.PI * 2);
+
+const flower = new Path2D();
+for (let i = 0; i < 8; i++) {
+  flower.addPath(petal, new DOMMatrix().translateSelf(160, 100).rotateSelf(i * 45));
+}
+ctx.fillStyle = 'rgba(219, 39, 119, 0.55)';
+ctx.fill(flower);                    // 整朵花是同一條路徑：重疊處不會變深
+ctx.fillStyle = '#f59e0b';
+ctx.beginPath();
+ctx.arc(160, 100, 16, 0, Math.PI * 2);
+ctx.fill();
+</script>
+        </article>
+
+        <article class="api">
+          <div class="sig">path.moveTo / lineTo / closePath / quadraticCurveTo / bezierCurveTo / arc / arcTo / ellipse /
+            rect / roundRect</div>
+          <p>與 context 上的<a href="#paths">路徑方法</a>相同，只是記錄在 Path2D 裡。</p>
+          <script type="text/x-example">
+const p = new Path2D();
+p.moveTo(20, 180);
+p.lineTo(60, 120);
+p.quadraticCurveTo(90, 60, 130, 120);
+p.bezierCurveTo(150, 160, 180, 40, 210, 100);
+p.arcTo(250, 180, 300, 100, 30);
+p.lineTo(300, 100);
+p.closePath();
+p.moveTo(290, 40);
+p.arc(270, 40, 20, 0, Math.PI * 2);
+p.rect(20, 20, 50, 40);
+p.roundRect(90, 20, 60, 40, 12);
+p.ellipse(195, 40, 25, 14, 0.4, 0, Math.PI * 2);
+
+ctx.fillStyle = '#e0e7ff';
+ctx.fill(p, 'evenodd');
+ctx.lineWidth = 3;
+ctx.strokeStyle = '#2457d6';
+ctx.stroke(p);
+</script>
+        </article>
+      </section>
+
+      <section data-sec>
+        <h2 id="limits">限制與差異</h2>
+        <ul>
+          <li><b>濾鏡與陰影的成本</b>：每次繪圖都會多做 3–8 次離屏 pass（只限圖形範圍），大量小圖形同時套用濾鏡時，可以考慮先畫完再用 <code>applyFilter</code>
+            一次處理。<code>filter</code> 不支援 <code>url()</code>。自訂 shader 與無界合成模式會處理整個畫布。</li>
+          <li><b>濾鏡長度與 dpr</b>：WebGL2D 的 <code>blur</code>、陰影等長度以 CSS 像素計算；原生 Canvas 以 backing store 像素計算，所以原生用
+            <code>scale(dpr)</code> 做高解析度時，模糊會變成一半。（本文件的原生對照已經補正這一點。）</li>
+          <li><b>Path2D</b>：<code>fill</code>、<code>stroke</code>、<code>clip</code>、<code>isPointIn*</code> 只接受
+            <code>WebGL2D.Path2D</code>。</li>
+          <li><b>改變 canvas 尺寸</b>：原生 2D 會重設所有狀態；WebGL2D 只會更新 viewport 與裁切遮罩，其他狀態保留。需要完全重設時請呼叫 <code>reset()</code>。</li>
+          <li><b>反鋸齒</b>依賴 WebGL 的 MSAA，邊緣和原生 2D 略有不同（平均每像素差異約 0.1–2，範圍 0–255）。</li>
+          <li><b>文字</b>：字形由離屏 2D canvas 點陣化成遮罩；單一字串的遮罩最大 4096 px，超過時會降低解析度。</li>
+          <li><b>漸層</b>的色標會烘焙成 512 階的紋理，極窄的硬邊可能會有 1 階的柔化。</li>
+          <li>stencil 環繞計數只有 7 個位元，同一點被超過 127 層同向的子路徑覆蓋時，nonzero 判斷可能出錯。</li>
+          <li>WebGL context 遺失後不會自動恢復。</li>
+        </ul>
+      </section>
+
+      <section data-sec>
+        <h2 id="perf">效能建議</h2>
+        <ul>
+          <li>重複出現的形狀做成 <code>Path2D</code>，再搭配 <code>setTransform</code> 重複使用。</li>
+          <li><code>fillRect</code>、<code>drawImage</code>、文字是凸四邊形，會走只測試裁切的快速路徑。</li>
+          <li>每格都整個重畫的動畫，可以傳入 <code>{ preserveDrawingBuffer: false }</code>。</li>
+          <li>避免在動畫迴圈中呼叫 <code>getImageData</code>。</li>
+          <li>不同的 WebGL context 之間無法共用紋理，所以 <code>drawImage(另一個 context)</code>、canvas 和影片每次呼叫都會複製一次畫面。內容不再變動的圖層，可以先用
+            <code>await createImageBitmap(ctx2.canvas)</code> 轉成 <code>ImageBitmap</code>，WebGL2D 會快取它的紋理。</li>
+          <li><code>imageSmoothingQuality</code> 為 <code>medium</code>/<code>high</code> 且大幅縮小時，每個像素最多會取樣 64（medium）或
+            144（high）次。大量縮圖可以先縮到合適的尺寸並快取，或改用 <code>low</code>。</li>
+          <li>內容相同的文字會命中遮罩快取；每格都變動的文字需要每次重新點陣化。</li>
+          <li><code>source-in</code>、<code>copy</code> 等無界合成運算，每次繪製會多兩次全畫面 pass。</li>
+          <li>混合模式（<code>screen</code> 除外）每次繪製都要經過離屏圖層，並複製一次目的地區域（只限圖形範圍）。大量小圖形使用相同的混合模式時，可以先畫到另一個 canvas，再用
+            <code>drawImage</code> 一次混合。</li>
+        </ul>
+      </section>
+
+      <p id="empty" class="hidden" style="color:var(--muted)">找不到符合的 API。</p>
+    </main>
+  </div>
+
+  <script src="webgl2d.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const W = 320, H = 200;
+      const PR = Math.max(1, Math.min(4, window.devicePixelRatio || 1));   // 以螢幕實際解析度渲染
+
+      /* ---------- 範例共用素材 ---------- */
+      const tile = document.createElement('canvas');
+      tile.width = tile.height = 20;
+      {
+        const t = tile.getContext('2d');
+        t.fillStyle = '#fde68a'; t.fillRect(0, 0, 20, 20);
+        t.fillStyle = '#b45309'; t.fillRect(0, 0, 10, 10); t.fillRect(10, 10, 10, 10);
+        t.fillStyle = '#1e40af'; t.beginPath(); t.arc(10, 10, 4, 0, Math.PI * 2); t.fill();
+      }
+
+      const sampleImage = document.createElement('canvas');
+      sampleImage.width = 160; sampleImage.height = 100;
+      {
+        const s = sampleImage.getContext('2d');
+        const sky = s.createLinearGradient(0, 0, 0, 100); sky.addColorStop(0, '#60a5fa'); sky.addColorStop(1, '#dbeafe');
+        s.fillStyle = sky; s.fillRect(0, 0, 160, 100);
+        s.fillStyle = '#fbbf24'; s.beginPath(); s.arc(122, 28, 14, 0, Math.PI * 2); s.fill();
+        s.fillStyle = '#4b5563'; s.beginPath(); s.moveTo(0, 80); s.lineTo(45, 30); s.lineTo(80, 70); s.lineTo(105, 45); s.lineTo(160, 85); s.lineTo(160, 100); s.lineTo(0, 100); s.fill();
+        s.fillStyle = '#f8fafc'; s.beginPath(); s.moveTo(45, 30); s.lineTo(35, 42); s.lineTo(55, 42); s.fill();
+        s.fillStyle = '#16a34a'; s.fillRect(0, 88, 160, 12);
+        s.fillStyle = '#111827'; s.font = 'bold 11px sans-serif'; s.fillText('sampleImage', 6, 14);
+      }
+
+      /* ---------- 共用的 WebGL2D context（避免超過瀏覽器的 WebGL context 數量上限） ---------- */
+      const glCanvas = document.createElement('canvas');
+      glCanvas.width = Math.round(W * PR); glCanvas.height = Math.round(H * PR);
+      let gctx = null, initError = null;
+      try { gctx = WebGL2D.getContext(glCanvas, { pixelRatio: PR }); } catch (e) { initError = e; }
+
+      /* 原生 Canvas 2D 端：用 Proxy 讓 dpr 縮放永遠在最底層，行為與 WebGL2D 的 pixelRatio 一致 */
+      function hidpiNative(n, pr) {
+        const base = () => n.setTransform(pr, 0, 0, pr, 0, 0);
+        const scaled = {};
+        const pt = (a) => (a[0] && typeof a[0] === 'object') ? [a[0], a[1] * pr, a[2] * pr, ...a.slice(3)] : [a[0] * pr, a[1] * pr, ...a.slice(2)];
+        const over = {
+          pixelRatio: pr,
+          setTransform(...a) {
+            n.setTransform(...a);
+            const m = n.getTransform();
+            n.setTransform(new DOMMatrix().scaleSelf(pr, pr).multiplySelf(m));
+          },
+          resetTransform: base,
+          getTransform: () => new DOMMatrix().scaleSelf(1 / pr, 1 / pr).multiplySelf(n.getTransform()),
+          reset() { if (n.reset) n.reset(); else n.canvas.width = n.canvas.width; base(); for (const k in scaled) delete scaled[k]; },
+          isPointInPath: (...a) => n.isPointInPath(...pt(a)),
+          isPointInStroke: (...a) => n.isPointInStroke(...pt(a)),
+        };
+        // 原生的 filter / shadow 長度以 backing store 像素計算，乘上 dpr 才會與 CSS 像素一致
+        const NUM = ['shadowBlur', 'shadowOffsetX', 'shadowOffsetY'];
+        return new Proxy(n, {
+          get(t, k) {
+            if (k in over) return over[k];
+            if (k in scaled) return scaled[k];
+            const v = t[k]; return typeof v === 'function' ? v.bind(t) : v;
+          },
+          set(t, k, v) {
+            if (NUM.includes(k)) { t[k] = v * pr; scaled[k] = t[k] / pr; }   // 無效值會被原生忽略，讀回原值
+            else if (k === 'filter' && typeof v === 'string') {
+              const before = t.filter;
+              t.filter = v.replace(/(-?\d*\.?\d+)px/g, (_, x) => x * pr + 'px');
+              if (t.filter !== before || v.replace(/(-?\d*\.?\d+)px/g, (_, x) => x * pr + 'px') === before) scaled.filter = v;
+            } else t[k] = v;
+            return true;
+          },
+        });
+      }
+
+      /* ---------- 語法上色 ---------- */
+      const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const TOKEN = /(\/\/[^\n]*)|('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`)|\b(\d+(?:\.\d+)?(?:e[-+]?\d+)?)\b|\b(const|let|var|function|return|for|if|else|new|of|in|true|false|null|undefined|this|while|break|continue|try|catch|throw|typeof)\b|([A-Za-z_$][\w$]*)(?=\s*\()/g;
+      function highlight(src) {
+        let out = '', last = 0, m;
+        TOKEN.lastIndex = 0;
+        while ((m = TOKEN.exec(src))) {
+          out += esc(src.slice(last, m.index));
+          const cls = m[1] ? 't-com' : m[2] ? 't-str' : m[3] ? 't-num' : m[4] ? 't-kw' : 't-fn';
+          out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+          last = TOKEN.lastIndex;
+        }
+        return out + esc(src.slice(last)) + '\n';
+      }
+      function dedent(s) {
+        const lines = s.replace(/^\s*\n/, '').replace(/\s+$/, '').split('\n');
+        const ind = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+        return lines.map((l) => l.slice(ind)).join('\n');
+      }
+
+      /* ---------- 執行 ---------- */
+      function fmt(v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.name + ': ' + v.message;
+        if (ArrayBuffer.isView(v)) v = Array.from(v);
+        if (v && typeof v === 'object') { try { return JSON.stringify(v); } catch (e) { return String(v); } }
+        return String(v);
+      }
+      // 範例以 async function 執行，可以使用 await（例如等待影片載入）
+      const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+      function exec(code, ctx, canvas, P, log) {
+        const fn = new AsyncFunction('ctx', 'canvas', 'Path2D', 'WebGL2D', 'log', 'sampleImage', 'tile', '"use strict";\n' + code);
+        return fn(ctx, canvas, P, WebGL2D, log, sampleImage, tile);
+      }
+      const showNative = () => document.getElementById('cmp').checked;
+
+      // 所有範例共用同一個 WebGL2D context，所以排隊依序執行
+      let queue = Promise.resolve();
+      function run(card) {
+        const p = queue.then(() => runNow(card));
+        queue = p.catch(() => { });
+        return p;
+      }
+      async function runNow(card) {
+        const code = card._ta.value, out = card._out;
+        out.textContent = '';
+        const line = (text, cls) => { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = text; out.appendChild(d); };
+        const log = (...a) => line(a.map(fmt).join(' '));
+
+        // WebGL2D
+        const dctx = card._glView.getContext('2d');
+        dctx.clearRect(0, 0, card._glView.width, card._glView.height);
+        if (!gctx) { line('無法建立 WebGL context：' + (initError && initError.message), 'err'); return; }
+        const t0 = performance.now();
+        try {
+          gctx.reset();
+          await exec(code, gctx, glCanvas, WebGL2D.Path2D, log);
+        } catch (e) { line('WebGL2D 錯誤 → ' + fmt(e), 'err'); }
+        dctx.drawImage(glCanvas, 0, 0);
+        card._time.textContent = (performance.now() - t0).toFixed(1) + ' ms';
+
+        // 原生 Canvas 2D 對照
+        if (card._nView && showNative()) {
+          const nc = card._nView;
+          if (!card._nctx) card._nctx = hidpiNative(nc.getContext('2d'), PR);
+          card._nctx.reset();
+          try { await exec(code, card._nctx, nc, window.Path2D, () => { }); }
+          catch (e) { line('原生 Canvas 2D 錯誤 → ' + fmt(e), 'err'); }
+        }
+      }
+
+      /* ---------- 建立互動區塊 ---------- */
+      const cards = [];
+      document.querySelectorAll('article.api').forEach((card) => {
+        const src = card.querySelector('script[type="text/x-example"]');
+        if (!src) return;
+        const original = dedent(src.textContent);
+        const native = card.dataset.native !== 'false';
+        const play = document.createElement('div');
+        play.className = 'play';
+        play.innerHTML =
+          '<div class="bar"><span>範例 · 可編輯</span><span class="sp"></span>' +
+          '<button type="button" class="reset">還原</button><button type="button" class="run">▶ 執行</button></div>' +
+          '<div class="editor"><pre aria-hidden="true"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="範例程式碼"></textarea></div>' +
+          '<div class="result">' +
+          '<figure><figcaption><span>WebGL2D</span><span class="time"></span></figcaption><canvas class="glv" width="' + Math.round(W * PR) + '" height="' + Math.round(H * PR) + '"></canvas></figure>' +
+          (native ? '<figure class="native"><figcaption><span>原生 Canvas 2D</span></figcaption><canvas class="nv" width="' + Math.round(W * PR) + '" height="' + Math.round(H * PR) + '"></canvas></figure>'
+            : '<figure class="native"><figcaption><span>原生 Canvas 2D</span></figcaption><p style="font-size:12.5px;color:var(--muted);margin:0">這是 WebGL2D 專屬的 API，沒有原生版本可以對照。</p></figure>') +
+          '</div><div class="out"></div>';
+        src.replaceWith(play);
+
+        const ta = play.querySelector('textarea'), pre = play.querySelector('pre');
+        Object.assign(card, {
+          _ta: ta, _out: play.querySelector('.out'), _time: play.querySelector('.time'),
+          _glView: play.querySelector('.glv'), _nView: play.querySelector('.nv'), _ran: false,
+        });
+        const sync = () => { pre.innerHTML = highlight(ta.value); ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+        ta.value = original; sync();
+
+        let timer = 0;
+        ta.addEventListener('input', () => { sync(); clearTimeout(timer); timer = setTimeout(() => run(card), 500); });
+        ta.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); clearTimeout(timer); run(card); return; }
+          if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            const s = ta.selectionStart, en = ta.selectionEnd;
+            ta.setRangeText('  ', s, en, 'end'); sync();
+          }
+        });
+        play.querySelector('.run').addEventListener('click', () => run(card));
+        play.querySelector('.reset').addEventListener('click', () => { ta.value = original; sync(); run(card); });
+        card._sync = sync;
+        cards.push(card);
+      });
+
+      // 進入畫面才執行，節省載入時間
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting && !en.target._ran) { en.target._ran = true; en.target._sync(); run(en.target); }
+        });
+      }, { rootMargin: '300px 0px' });
+      cards.forEach((c) => io.observe(c));
+      addEventListener('resize', () => cards.forEach((c) => c._sync()));
+
+      // 原生對照開關
+      const cmp = document.getElementById('cmp');
+      const applyCmp = () => document.querySelectorAll('.result .native').forEach((f) => f.classList.toggle('off', !cmp.checked));
+      cmp.addEventListener('change', () => { applyCmp(); if (cmp.checked) cards.filter((c) => c._ran).forEach(run); });
+      applyCmp();
+
+      /* ---------- 搜尋 ---------- */
+      const q = document.getElementById('q'), secs = [...document.querySelectorAll('[data-sec]')], empty = document.getElementById('empty');
+      q.addEventListener('input', () => {
+        const t = q.value.trim().toLowerCase();
+        let any = false;
+        cards.forEach((a) => {
+          const hay = (a.querySelector('.sig').textContent + ' ' + [...a.querySelectorAll(':scope > p')].map((p) => p.textContent).join(' ')).toLowerCase();
+          a.classList.toggle('hidden', !!t && !hay.includes(t));
+        });
+        secs.forEach((s) => {
+          const has = s.querySelector('article.api');
+          const vis = !t || (has ? s.querySelector('article.api:not(.hidden)') : s.textContent.toLowerCase().includes(t));
+          s.classList.toggle('hidden', !vis);
+          if (vis) any = true;
+        });
+        empty.classList.toggle('hidden', any);
+        cards.forEach((c) => { if (!c.classList.contains('hidden')) c._sync(); });
+      });
+
+      /* ---------- 深淺色 ---------- */
+      const root = document.documentElement, btn = document.getElementById('theme');
+      try { const s = localStorage.getItem('webgl2d-doc-theme'); if (s) root.dataset.theme = s; } catch (e) { }
+      btn.addEventListener('click', () => {
+        const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try { localStorage.setItem('webgl2d-doc-theme', root.dataset.theme); } catch (e) { }
+      });
+
+      // 測試用：一次執行全部範例並回報錯誤
+      window.__runAll = async () => {
+        const res = [];
+        for (const c of cards) { c._ran = true; await run(c); res.push({ sig: c.querySelector('.sig').textContent.trim().slice(0, 60), out: c._out.textContent }); }
+        return res;
+      };
+    })();
+  </script>
+</body>
+
+</html>

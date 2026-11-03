@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebGL2D 比對</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1d2330; --muted:#667085; --card:#fff; --line:#e3e6eb; --bad:#c2410c; --good:#15803d; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161b; --fg:#e7e9ee; --muted:#9aa3b2; --card:#1c1f26; --line:#2b2f38; --bad:#fb923c; --good:#4ade80; } }
+  body { margin:0; padding:24px 16px; font:14px/1.5 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; background:var(--bg); color:var(--fg); }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 20px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 560px), 1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .card h2 { font-size:14px; margin:0 0 8px; display:flex; justify-content:space-between; gap:8px; }
+  .diff { font-weight:500; font-variant-numeric:tabular-nums; }
+  .diff.good { color:var(--good); } .diff.bad { color:var(--bad); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .row figure { margin:0; }
+  figcaption { font-size:12px; color:var(--muted); }
+  canvas { display:block; width:260px; max-width:100%; height:auto; aspect-ratio:1; border-radius:6px;
+    background: repeating-conic-gradient(#0001 0 25%, transparent 0 50%) 0 0 / 16px 16px; }
+</style>
+</head>
+<body>
+<h1>Canvas 2D ↔ WebGL2D 並排比對</h1>
+<p class="sub">左：原生 <code>getContext('2d')</code>，右：<code>WebGL2D.getContext()</code>，兩邊執行完全相同的繪圖函式。差異值為平均每像素通道誤差（0–255）。</p>
+<div class="grid" id="grid"></div>
+<script src="webgl2d.js"></script>
+<script>
+const SIZE = 260;
+const PR = window.devicePixelRatio || 1;   // 高解析度螢幕：backing store = CSS 尺寸 × dpr
+const scenes = {
+  '矩形 / 變換 / 透明度': (c) => {
+    c.fillStyle = '#3b82f6'; c.fillRect(20, 20, 100, 80);
+    c.save(); c.translate(170, 70); c.rotate(Math.PI / 6); c.globalAlpha = 0.6;
+    c.fillStyle = 'rgb(239 68 68)'; c.fillRect(-50, -30, 100, 60); c.restore();
+    c.strokeStyle = 'hsl(150, 70%, 35%)'; c.lineWidth = 6; c.strokeRect(30, 140, 200, 90);
+    c.clearRect(60, 160, 60, 40);
+  },
+  '路徑：曲線 / 弧 / 環繞規則': (c) => {
+    c.beginPath(); c.moveTo(20, 120); c.bezierCurveTo(60, 10, 140, 230, 240, 110); c.quadraticCurveTo(140, 250, 20, 120);
+    c.fillStyle = '#f59e0b'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#7c2d12'; c.stroke();
+    const star = (cx, cy, r) => { c.beginPath(); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 4 * Math.PI / 5; c.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a)); } c.closePath(); };
+    star(70, 200, 50); c.fillStyle = '#8b5cf6'; c.fill('nonzero');
+    star(190, 200, 50); c.fill('evenodd');
+    c.beginPath(); c.arc(130, 60, 40, 0, Math.PI * 1.5); c.lineWidth = 8; c.strokeStyle = '#0ea5e9'; c.stroke();
+  },
+  '線條：端點 / 接合 / 虛線': (c) => {
+    c.lineWidth = 18; c.strokeStyle = 'rgba(16,185,129,0.7)';
+    ['butt', 'round', 'square'].forEach((cap, i) => { c.lineCap = cap; c.beginPath(); c.moveTo(30, 30 + i * 30); c.lineTo(110, 30 + i * 30); c.stroke(); });
+    c.lineCap = 'butt';
+    ['miter', 'round', 'bevel'].forEach((j, i) => { c.lineJoin = j; c.beginPath(); c.moveTo(140 + i * 38, 100); c.lineTo(155 + i * 38, 30); c.lineTo(170 + i * 38, 100); c.stroke(); });
+    c.lineJoin = 'miter'; c.lineWidth = 4; c.strokeStyle = '#e11d48';
+    c.setLineDash([16, 8, 2, 8]); c.lineDashOffset = 4;
+    c.beginPath(); c.arc(130, 185, 55, 0, Math.PI * 2); c.stroke();
+    c.setLineDash([]);
+  },
+  '漸層：線性 / 放射 / 圓錐': (c) => {
+    const lg = c.createLinearGradient(20, 0, 240, 0);
+    lg.addColorStop(0, '#ef4444'); lg.addColorStop(0.5, 'rgba(250,204,21,0.5)'); lg.addColorStop(1, '#22c55e');
+    c.fillStyle = lg; c.fillRect(20, 20, 220, 60);
+    const rg = c.createRadialGradient(80, 160, 5, 70, 170, 60);
+    rg.addColorStop(0, '#fff'); rg.addColorStop(1, '#1d4ed8');
+    c.fillStyle = rg; c.beginPath(); c.arc(70, 170, 60, 0, Math.PI * 2); c.fill();
+    const cg = c.createConicGradient(0, 190, 170);
+    ['#f43f5e', '#eab308', '#10b981', '#3b82f6', '#f43f5e'].forEach((col, i) => cg.addColorStop(i / 4, col));
+    c.fillStyle = cg; c.beginPath(); c.arc(190, 170, 55, 0, Math.PI * 2); c.fill();
+  },
+  '裁切 / 合成': (c) => {
+    c.save();
+    c.beginPath(); c.arc(130, 130, 100, 0, Math.PI * 2); c.clip();
+    c.beginPath(); c.rect(30, 30, 200, 200); c.rect(80, 80, 100, 100); c.clip('evenodd');
+    for (let i = 0; i < 10; i++) { c.fillStyle = `hsl(${i * 36} 80% 55%)`; c.fillRect(0, i * 26, 260, 26); }
+    c.restore();
+    c.fillStyle = '#0f172a'; c.fillRect(100, 100, 60, 60);
+    c.globalCompositeOperation = 'destination-out'; c.beginPath(); c.arc(130, 130, 20, 0, Math.PI * 2); c.fill();
+    c.globalCompositeOperation = 'source-over';
+  },
+  'roundRect / ellipse / arcTo / Path2D': (c, W) => {
+    c.fillStyle = '#14b8a6'; c.beginPath(); c.roundRect(20, 20, 100, 70, [20, 4]); c.fill();
+    c.beginPath(); c.ellipse(190, 55, 50, 25, Math.PI / 8, 0, Math.PI * 2); c.fillStyle = '#a855f7'; c.fill();
+    c.beginPath(); c.moveTo(20, 230); c.arcTo(20, 120, 120, 120, 40); c.lineTo(120, 230); c.lineWidth = 5; c.strokeStyle = '#334155'; c.stroke();
+    const P = W.Path2D;
+    const heart = new P('M 190 230 C 120 180 150 120 190 160 C 230 120 260 180 190 230 Z');
+    c.fillStyle = '#ef4444'; c.fill(heart);
+    const ring = new P(); ring.arc(0, 0, 18, 0, Math.PI * 2);
+    const all = new P(); all.addPath(ring, { a: 1, b: 0, c: 0, d: 1, e: 160, f: 110 });
+    c.lineWidth = 3; c.strokeStyle = '#f97316'; c.stroke(all);
+  },
+  '文字 / 圖樣 / 影像': (c, W, ctx2) => {
+    c.font = 'bold 28px system-ui, sans-serif'; c.fillStyle = '#111827';
+    c.fillText('Hello 你好', 20, 46);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const g = c.createLinearGradient(0, 70, 260, 110); g.addColorStop(0, '#2563eb'); g.addColorStop(1, '#db2777');
+    c.fillStyle = g; c.font = '34px Georgia, serif'; c.fillText('WebGL2D', 130, 92);
+    c.strokeStyle = '#059669'; c.lineWidth = 1.5; c.strokeText('strokeText', 130, 130, 120);
+    c.textAlign = 'start'; c.textBaseline = 'alphabetic';
+    const pat = c.createPattern(tile, 'repeat'); c.fillStyle = pat; c.fillRect(20, 160, 110, 80);
+    c.imageSmoothingEnabled = false; c.drawImage(tile, 0, 0, 8, 8, 150, 160, 80, 80);
+  },
+  '合成：全部 26 種': (c) => {
+    const ops = ['source-over', 'source-in', 'source-out', 'source-atop', 'destination-over', 'destination-in',
+      'destination-out', 'destination-atop', 'lighter', 'copy', 'xor', 'multiply', 'screen', 'overlay', 'darken',
+      'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion', 'hue',
+      'saturation', 'color', 'luminosity'];
+    ops.forEach((op, i) => {
+      const x = (i % 6) * 43, y = Math.floor(i / 6) * 52;
+      c.save();
+      c.beginPath(); c.rect(x, y, 43, 52); c.clip();
+      const g = c.createLinearGradient(x, 0, x + 40, 0);
+      g.addColorStop(0, 'rgba(36, 87, 214, 1)'); g.addColorStop(1, 'rgba(250, 204, 21, 0.6)');
+      c.fillStyle = g; c.fillRect(x + 3, y + 3, 30, 36);              // 目的地：不透明 → 半透明
+      c.globalCompositeOperation = op; c.globalAlpha = 0.85;
+      c.fillStyle = 'rgba(225, 29, 72, 0.9)';
+      c.beginPath(); c.arc(x + 27, y + 30, 15, 0, Math.PI * 2); c.fill();   // 來源：半透明 + globalAlpha
+      c.restore();
+    });
+  },
+  '濾鏡 filter': (c) => {
+    const fs = ['blur(3px)', 'grayscale(1)', 'sepia(0.8)', 'hue-rotate(120deg)', 'invert(1)',
+      'contrast(2) brightness(0.8)', 'saturate(3)', 'drop-shadow(4px 4px 3px rgba(0,0,0,0.6))', 'opacity(0.4) blur(1px)'];
+    fs.forEach((f, i) => {
+      const x = 8 + (i % 3) * 86, y = 8 + Math.floor(i / 3) * 86;
+      c.filter = f;
+      c.fillStyle = '#2457d6'; c.fillRect(x, y, 56, 56);
+      c.fillStyle = '#f59e0b'; c.beginPath(); c.arc(x + 46, y + 46, 22, 0, Math.PI * 2); c.fill();
+    });
+    c.filter = 'none';
+  },
+  '陰影 shadow': (c) => {
+    c.shadowColor = 'rgba(0, 0, 0, 0.55)'; c.shadowBlur = 10; c.shadowOffsetX = 6; c.shadowOffsetY = 6;
+    c.fillStyle = '#14b8a6'; c.fillRect(25, 25, 90, 70);
+    c.shadowColor = 'rgba(225, 29, 72, 0.8)'; c.shadowBlur = 16; c.shadowOffsetX = 0; c.shadowOffsetY = 0;
+    c.lineWidth = 6; c.strokeStyle = '#be123c'; c.beginPath(); c.arc(190, 65, 40, 0, Math.PI * 2); c.stroke();
+    c.shadowColor = '#1e3a8a'; c.shadowBlur = 0; c.shadowOffsetX = 3; c.shadowOffsetY = 3;
+    c.font = 'bold 36px system-ui, sans-serif'; c.fillStyle = '#93c5fd'; c.fillText('Shadow', 30, 170);
+    c.shadowColor = 'rgba(0,0,0,0.4)'; c.shadowBlur = 6; c.shadowOffsetX = 4; c.shadowOffsetY = 4;
+    c.drawImage(tile, 200, 150, 40, 40);
+  },
+  '像素：getImageData / putImageData': (c) => {
+    c.fillStyle = '#0284c7'; c.fillRect(20, 20, 100, 100);
+    c.fillStyle = 'rgba(244,63,94,0.5)'; c.fillRect(70, 70, 100, 100);
+    const d = c.getImageData(20, 20, 150, 150);
+    for (let i = 0; i < d.data.length; i += 4) { d.data[i] = 255 - d.data[i]; }
+    c.putImageData(d, 90, 90, 0, 0, 150, 150);
+  },
+};
+
+// 測試用小圖（棋盤）
+const tile = document.createElement('canvas'); tile.width = tile.height = 16;
+{ const t = tile.getContext('2d'); t.fillStyle = '#fde68a'; t.fillRect(0, 0, 16, 16); t.fillStyle = '#b45309'; t.fillRect(0, 0, 8, 8); t.fillRect(8, 8, 8, 8); t.fillStyle = '#1e40af'; t.fillRect(5, 5, 6, 6); }
+
+const results = [];
+for (const [name, fn] of Object.entries(scenes)) {
+  const card = document.createElement('div'); card.className = 'card';
+  card.innerHTML = `<h2><span>${name}</span><span class="diff"></span></h2><div class="row"></div>`;
+  const row = card.querySelector('.row');
+  const mk = (label) => { const f = document.createElement('figure'); const cv = document.createElement('canvas'); cv.width = cv.height = Math.round(SIZE * PR); f.append(cv); f.insertAdjacentHTML('beforeend', `<figcaption>${label}</figcaption>`); row.append(f); return cv; };
+  const a = mk('Canvas 2D'), b = mk('WebGL2D');
+  document.getElementById('grid').append(card);
+  const c2 = a.getContext('2d'), cg = WebGL2D.getContext(b, { pixelRatio: PR });
+  c2.scale(PR, PR);   // 原生 2D 需要自己縮放；WebGL2D 由 pixelRatio 處理
+  let err = '';
+  fn(c2, { Path2D }, c2);
+  try { fn(cg, WebGL2D, c2); } catch (e) { err = e.message; console.error(name, e); }
+  const N = Math.round(SIZE * PR);
+  const pa = c2.getImageData(0, 0, N, N).data, pb = cg.getImageData(0, 0, N, N).data;
+  let sum = 0; for (let i = 0; i < pa.length; i++) sum += Math.abs(pa[i] - pb[i]);
+  const diff = sum / pa.length;
+  const el = card.querySelector('.diff');
+  el.textContent = err ? '錯誤：' + err : `差異 ${diff.toFixed(2)}`;
+  el.classList.add(!err && diff < 3 ? 'good' : 'bad');
+  results.push({ name, diff: +diff.toFixed(3), err });
+}
+window.__results = results;
+document.title = 'DONE ' + JSON.stringify(results);
+</script>
+</body>
+</html>
